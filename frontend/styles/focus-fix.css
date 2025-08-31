@@ -1,0 +1,23 @@
+/* Garantir foco do input do chat e evitar overlays bloquearem clique */
+.chat-footer, .message-composer, .composer, .chat-input, .chat-input-wrap {
+  position: sticky;
+  bottom: 0;
+  z-index: 60;
+}
+.bg-overlay, .decor, .gradient, .glass, .fx, .screen-bg, .bg-screen {
+  pointer-events: none !important;
+}
+.chat-input input, .chat-input textarea, .message-composer input, .message-composer textarea,
+.composer input, .composer textarea, input[type="text"], textarea {
+  pointer-events: auto;
+  position: relative;
+  z-index: 70;
+}
+
+/* Mesma imagem de fundo (login/registro e chat) */
+body.auth-bg {
+  background-image: url('/bg-banner.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
