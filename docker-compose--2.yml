@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  nats:
+    image: nats:latest
+    container_name: nats-local
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "9222:9222"
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf
+    command: ["-c", "/etc/nats/nats.conf"]
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-local
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: nest-backend
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+      - nats
+
+  frontend:
+    build: ./frontend
+    container_name: next-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+      - nats
+
+volumes:
+  mongo_data:

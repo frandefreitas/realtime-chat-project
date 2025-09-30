@@ -1,9 +1,10 @@
+// frontend/components/ClienteLayout.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { createNatsClient } from '@/lib/nats';
 import { jwtDecode } from 'jwt-decode';
+import { publishJSON } from '@/lib/nats'; // usamos seu helper
 
 type JwtPayload = { sub: string; exp: number; iat: number; username?: string };
 
@@ -25,35 +26,36 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => { setMounted(true); checkToken(); }, []);
   useEffect(() => { checkToken(); }, [pathname]);
 
+  // Heartbeat de presença enquanto logado
   useEffect(() => {
     if (!isLoggedIn) return;
 
     let stop = false;
     let timer: any;
-    let natsConn: Awaited<ReturnType<typeof createNatsClient>> | null = null;
 
     (async () => {
       try {
         const token = getCookie('token');
-        const { sub: userId } = jwtDecode<JwtPayload>(token);
-        natsConn = await createNatsClient();
-        if (!natsConn || stop) return;
+        if (!token) return;
 
-        const sendBeat = async () => {
+        const decoded = jwtDecode<JwtPayload>(token);
+        const cookieUsername = getCookie('username');
+        const username = decoded.username || cookieUsername || decoded.sub;
+
+        const beat = async () => {
           try {
-            await natsConn!.pub('presence.heartbeat', { userId, ts: Date.now() });
+            await publishJSON(`presence.heartbeat.${username}`, { userId: decoded.sub, username, ts: Date.now() });
           } catch {}
         };
 
-        await sendBeat();
-        timer = setInterval(sendBeat, 10_000);
+        await beat();
+        if (!stop) timer = setInterval(beat, 10_000);
       } catch {}
     })();
 
     return () => {
       stop = true;
       if (timer) clearInterval(timer);
-      try { natsConn?.close(); } catch {}
     };
   }, [isLoggedIn]);
 
