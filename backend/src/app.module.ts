@@ -1,30 +1,21 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
 import { NatsModule } from './nats/nats.module';
+import { PresenceModule } from './presence/presence.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRootAsync({
-      useFactory: (config: ConfigService) => {
-        const uri = config.get<string>('MONGODB_URI');
-        if (!uri) throw new Error('MONGODB_URI não definido no .env');
-        return { uri };
-      },
-      inject: [ConfigService],
-    }),
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGODB_URI as string),
+    NatsModule,
+    PresenceModule,
     AuthModule,
     UsersModule,
     ChatModule,
-    NatsModule, // nosso módulo que já cuida da conexão NATS com credenciais
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

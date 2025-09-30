@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { NatsClientService } from '../nats/nats-client.service';
+import { NatsService } from '../nats/nats.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly nats: NatsClientService) {}
+  constructor(private readonly nats: NatsService) {}
 
-  async publishToNats(msg: { text: string; userId: string; ts: number }) {
-    await this.nats.publish('chat.messages', msg);
+  async sendDirect(from: string, to: string, text: string) {
+    const subject = `chat.direct.${to}.${from}`;
+    await this.nats.publishJSON(subject, { from, to, text, ts: Date.now() });
   }
 }

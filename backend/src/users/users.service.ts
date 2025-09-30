@@ -36,7 +36,7 @@ export class UsersService {
       ...input,
       username: input.username.toLowerCase(),
       email: input.email.toLowerCase(),
-      avatarUrl: input.avatar, // mapeando avatar opcional
+      avatarUrl: input.avatar,
     });
     await doc.save();
     const obj = doc.toObject();
@@ -56,6 +56,11 @@ export class UsersService {
       .findOne({ username: username.toLowerCase() })
       .select('+password')
       .lean();
+  }
+
+  async findAllUsernames(): Promise<string[]> {
+    const docs = await this.userModel.find({}, { username: 1, _id: 0 }).lean();
+    return docs.map(d => d.username).filter(Boolean);
   }
 
   async updateAvatar(userId: string, avatar: string) {

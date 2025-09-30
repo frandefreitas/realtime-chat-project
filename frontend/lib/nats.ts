@@ -1,34 +1,32 @@
-// frontend/lib/nats.ts
-import { connect, StringCodec, NatsConnection } from 'nats.ws'; // 👈 use 'nats.ws' no browser
+import { connect, NatsConnection, StringCodec, Subscription } from 'nats.ws';
 
-type Sub = { unsubscribe: () => void };
+const sc = StringCodec();
+let promise: Promise<NatsConnection> | null = null;
 
-export async function createNatsClient(opts?: { servers?: string; token?: string }) {
-  const servers = opts?.servers ?? (process.env.NEXT_PUBLIC_NATS_WS ?? 'ws://localhost:9222');
-  const token = opts?.token;
+export function getNats(): Promise<NatsConnection> {
+  if (!promise) {
+    const servers =
+      process.env.NEXT_PUBLIC_NATS_WS_URL || 'ws://localhost:9222';
+    promise = connect({ servers });
+  }
+  return promise;
+}
 
-  const nc = await connect({
-    servers,
-    token,
-  });
+export async function publishJSON(subject: string, payload: unknown) {
+  const nc = await getNats();
+  nc.publish(subject, sc.encode(JSON.stringify(payload)));
+}
 
-  const sc = StringCodec();
-
-  return {
-    async pub(subject: string, data?: any) {
-      const payload = data === undefined ? undefined : sc.encode(JSON.stringify(data));
-      nc.publish(subject, payload);
-    },
-    async sub(subject: string, cb: (msg: any) => void): Promise<Sub> {
-      const sub = nc.subscribe(subject);
-      (async () => {
-        for await (const m of sub) {
-          const txt = sc.decode(m.data);
-          try { cb(JSON.parse(txt)); } catch { cb(txt); }
-        }
-      })();
-      return { unsubscribe: () => sub.unsubscribe() };
-    },
-    async close() { await nc.drain(); },
-  };
+export async function subscribeJSON<T = any>(
+  subject: string,
+  handler: (data: T) => void,
+): Promise<Subscription> {
+  const nc = await getNats();
+  const sub = nc.subscribe(subject);
+  (async () => {
+    for await (const m of sub) {
+      try { handler(JSON.parse(sc.decode(m.data))); } catch {}
+    }
+  })();
+  return sub;
 }

@@ -1,84 +1,52 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import { startPresenceHeartbeat, stopPresenceHeartbeat } from '@/lib/presence';
+import UserList from '@/components/UserList';
+import ChatBox from '@/components/ChatBox';
+import { useRouter } from 'next/navigation';
 
-type MyJwtPayload = {
-  sub: string;
-  username: string;
-  name?: string;
-  iat?: number;
-  exp?: number;
-};
-
-function getCookie(name: string) {
-  const match = document.cookie.split('; ').find(r => r.startsWith(name + '='));
-  if (!match) return '';
-  const value = match.split('=').slice(1).join('=');
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
-  }
-}
-
-function sanitizeToken(raw: string) {
-  return raw.replace(/Bearer\s+/i, '').replace(/"|"$/g, '');
-}
-
-function isLikelyJwt(token: string) {
-  return /^[A-Za-z0-9-]+.[A-Za-z0-9-]+.[A-Za-z0-9-_]+$/.test(token);
+function getCookie(name: string): string | null {
+  const part = document.cookie.split('; ').find(r => r.startsWith(name + '='));
+  return part ? decodeURIComponent(part.split('=')[1]) : null;
 }
 
 export default function DashboardPage() {
-  const [token, setToken] = useState('');
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const [me, setMe] = useState('');
+  const [peer, setPeer] = useState<{ username: string; online: boolean } | null>(null);
 
   useEffect(() => {
-    const raw = getCookie('token');
-    if (!raw) {
-      setError('Não autenticado');
-      return;
-    }
-
-    const t = sanitizeToken(raw);
-    setToken(t);
-
-    if (!isLikelyJwt(t)) {
-      setError('Token inválido');
-      return;
-    }
-
-    try {
-      const payload = jwtDecode<MyJwtPayload>(t);
-      if (payload.exp && Date.now() / 1000 >= payload.exp) {
-        setError('Sessão expirada');
-        return;
-      }
-      setName(payload.name || '');
-      setUsername(payload.username || '');
-    } catch {
-      setError('Token inválido');
-    }
-  }, []);
+    const u = getCookie('username');
+    const t = getCookie('token');
+    if (!u || !t) { router.push('/login'); return; }
+    setMe(u);
+    startPresenceHeartbeat(u);
+    return () => stopPresenceHeartbeat();
+  }, [router]);
 
   return (
-    <main className="grid gap-6">
-      <h2 className="text-xl font-semibold">Dashboard</h2>
-      {error && <p className="text-red-500">{error}</p>}
-      {!error && (
-        <div className="card grid gap-2">
-          <p className="text-lg font-medium">
-            Bem-vindo, <span className="text-yellow-300">{name || username || 'Usuário'}</span> 👋
-          </p>
-          <p className="opacity-80 text-sm">
-            Acesse o Chat e se comunique com o pessoal.
-          </p>
+    <div className="grid md:grid-cols-[1fr_2fr] gap-4 p-4">
+      <aside className="border rounded p-3">
+        <div className="mb-2 text-sm opacity-70">
+          Logado como <b>@{me}</b>
         </div>
-      )}
-      <a className="btn w-fit" href="/chat">Ir para o Chat</a>
-    </main>
+        <UserList me={me} selected={peer?.username} onSelect={setPeer} />
+      </aside>
+
+      <section className="border rounded">
+        {me && peer ? (
+          peer.online ? (
+            <ChatBox me={me} peer={peer.username} />
+          ) : (
+            <div className="p-6 opacity-60">
+              Usuário @{peer.username} está offline.  
+              Você só pode enviar mensagens para usuários online.
+            </div>
+          )
+        ) : (
+          <div className="p-6 opacity-60">Selecione um usuário ao lado para começar a conversar.</div>
+        )}
+      </section>
+    </div>
   );
 }

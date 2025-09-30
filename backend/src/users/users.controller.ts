@@ -43,4 +43,11 @@ export class UsersController {
     const avatar = `/uploads/avatars/${file.filename}`;
     return this.usersService.updateAvatar(id, avatar);
   }
+
+  @Get()
+  async listAll() {
+    const users = await this.usersService.findAllUsernames();
+    return { users }; 
+  }
+
 }

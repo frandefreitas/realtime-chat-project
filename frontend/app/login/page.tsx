@@ -1,75 +1,43 @@
 'use client';
-
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { login } from '@/lib/api';
+import { startPresenceHeartbeat } from '@/lib/presence';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-
-    if (!username || !password) {
-      setError('Preencha usuário e senha.');
-      return;
-    }
-
-    setLoading(true);
+    setErr(null);
     try {
-      const { access_token } = await login(username, password);
-
-      // Armazenando token (idealmente HttpOnly, mas segue padrão atual)
-      const secure = location.protocol === 'https:' ? '; Secure' : '';
-      document.cookie = `token=${access_token}; Path=/; SameSite=Lax${secure}`;
-
+      const { token } = await login({ username, password });
+      document.cookie = `token=${token}; Path=/;`;
+      document.cookie = `username=${encodeURIComponent(username)}; Path=/;`;
+      startPresenceHeartbeat(username);
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err?.message ?? 'Erro ao entrar');
-    } finally {
-      setLoading(false);
+    } catch (e: any) {
+      setErr(e?.message ?? 'Erro ao logar');
     }
   }
 
+  // MANTENHA seu layout/estilo aqui; o markup abaixo é exemplo neutro
   return (
-    <main className="grid gap-6">
-      <h2 className="text-xl font-semibold">Entrar</h2>
-
-      <form onSubmit={onSubmit} className="card grid gap-3 max-w-md">
-        <input
-          className="input"
-          placeholder="Usuário"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoComplete="username"
-        />
-        <input
-          className="input"
-          placeholder="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-        />
-
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-
-        <button className="btn" disabled={loading}>
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-
-        <p className="text-sm opacity-80">
-          Não tem conta?{' '}
-          <a className="underline" href="/register">
-            Registrar
-          </a>
-        </p>
+    <div className="max-w-sm mx-auto mt-16">
+      <h1 className="text-xl font-bold mb-4">Entrar</h1>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <input className="w-full px-3 py-2 rounded bg-white/5 border"
+          placeholder="username" value={username}
+          onChange={(e) => setUsername(e.target.value)} />
+        <input type="password" className="w-full px-3 py-2 rounded bg-white/5 border"
+          placeholder="senha" value={password}
+          onChange={(e) => setPassword(e.target.value)} />
+        {err && <div className="text-red-400 text-sm">{err}</div>}
+        <button className="w-full py-2 rounded bg-green-600">Entrar</button>
       </form>
-    </main>
+    </div>
   );
 }

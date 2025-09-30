@@ -87,7 +87,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           ) : (
             <>
               {navButton('Dashboard', '/dashboard')}
-              {navButton('Chat', '/chat')}
               <button className="btn bg-red-500 hover:bg-red-600 text-white" onClick={logout}>Deslogar</button>
             </>
           )}

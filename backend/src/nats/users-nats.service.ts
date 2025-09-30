@@ -1,55 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { NatsClientService } from './nats-client.service';
+import { NatsService } from './nats.service';
 
 @Injectable()
 export class UsersNatsService {
-  constructor(private readonly nats: NatsClientService) {}
+  constructor(private readonly nats: NatsService) {}
 
   list() {
-    return this.nats.publishAndWait({
-      cfg: 'core.users.list',
-      res: 'core.users.list',
-      data: {},
-    });
+    return this.nats.requestJSON('core.users.list', {});
   }
 
   get(userId: string) {
-    return this.nats.publishAndWait({
-      cfg: 'core.users.get',
-      res: 'core.users.get',
-      data: { userId },
-    });
+    return this.nats.requestJSON('core.users.get', { userId });
   }
 
   create(input: any) {
-    return this.nats.publishAndWait({
-      cfg: 'core.users.create',
-      res: 'core.users.create',
-      data: input,
-    });
+    return this.nats.requestJSON('core.users.create', input);
   }
 
   update(userId: string, patch: any) {
-    return this.nats.publishAndWait({
-      cfg: 'core.users.update',
-      res: 'core.users.update',
-      data: { userId, ...patch },
-    });
+    return this.nats.requestJSON('core.users.update', { userId, ...patch });
   }
 
   delete(userId: string) {
-    return this.nats.publishAndWait({
-      cfg: 'core.users.delete',
-      res: 'core.users.delete',
-      data: { userId },
-    });
+    return this.nats.requestJSON('core.users.delete', { userId });
   }
 
   getByLocalDefault(localDefault: string) {
-    return this.nats.publishAndWait({
-      cfg: 'core.users.get_by_local_default',
-      res: 'core.users.get_by_local_default',
-      data: { localDefault },
+    return this.nats.requestJSON('core.users.get_by_local_default', {
+      localDefault,
     });
   }
 }
