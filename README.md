@@ -110,14 +110,14 @@ sequenceDiagram
 ```env
 MONGODB_URI=mongodb://localhost:27017/chat
 SESSION_SECRET=
-PORT=3001
+PORT=4000
 FRONTEND_URL=
 ```
 
 **Frontend (.env)**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
 NEXT_PUBLIC_DOCKER=1
 NEXT_PUBLIC_API_URL=/api
 ```

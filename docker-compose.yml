@@ -1,39 +1,12 @@
 services:
-  mongo:
-    image: mongo:7
-    restart: unless-stopped
-    ports: ["27017:27017"]
-    volumes: ["mongo_data:/data/db"]
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      PORT: "4000"
-      MONGO_URI: mongodb://mongo:27017/realtime_chat
-      SESSION_SECRET: dev_secret_change
-      CORS_ORIGIN: http://localhost:3000
-      TRUST_PROXY: "1"
-    depends_on: [mongo]
-    ports: ["4000:4000"]
+  nats:
+    image: nats:2
+    container_name: nats-local
+    command: ["-c", "/etc/nats/nats.conf"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "9222:9222"   # WebSocket opcional
     volumes:
-      - uploads_data:/app/uploads
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      - ./nats.conf:/etc/nats/nats.conf:ro
     restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      NEXT_PUBLIC_DOCKER: "1"        # ativa rewrites para backend no Docker
-      NEXT_PUBLIC_API_URL: "/api"    # usa mesma origem no browser
-    depends_on: [backend]
-    ports: ["3000:3000"]
-
-volumes:
-  mongo_data:
-  uploads_data:
