@@ -1,4 +1,4 @@
-// File: /home/ixcsoft/Área de trabalho/realtime-chat-project-v3/frontend/app/register/page.tsx
+// File: /home/ixcsoft/Área de trabalho/realtime-chat-project/frontend/app/register/page.tsx
 import * as entry from '../../../../app/register/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
