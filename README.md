@@ -1,151 +1,269 @@
-# Chat em Tempo Real
+Chat em Tempo Real (NestJS + NATS + Next.js)
 
-Este é um projeto de chat em tempo real construído com Node.js, Socket.IO, Next.js e MongoDB.
+Projeto de chat em tempo real com NestJS, NATS (pub/sub e presença), Next.js e MongoDB.
 
-## 🚀 Funcionalidades
+🚀 Funcionalidades
 
-- Autenticação de usuários (registro/login)
-- Chat em tempo real
-- Notificações sonoras de novas mensagens
-- Interface responsiva com Tailwind CSS
+Autenticação de usuários (registro/login com JWT)
 
-## 🔧 Tecnologias
+Chat 1–1 em tempo real via NATS
 
-### Backend
-- Node.js
-- Express
-- Socket.IO
-- Passport.js
-- MongoDB
-- Multer (upload de arquivos)
+Presença (online/offline) usando heartbeats via NATS
 
-### Frontend
-- Next.js
-- Tailwind CSS
-- Socket.IO Client
-- Axios
+Notificações sonoras de novas mensagens no frontend
 
-## 📋 Pré-requisitos
+Interface responsiva (Tailwind opcional)
 
-- Node.js
-- MongoDB
-- Docker (opcional)
+Testes unitários (Jest) e E2E (Jest/Supertest)
 
-## 🔨 Instalação e Execução
+🔧 Tecnologias
+Backend
 
-### Sem Docker
+NestJS
 
-1. **Backend**
-```bash
+NATS (client @nats-io/nats)
+
+MongoDB (Mongoose)
+
+Passport/JWT
+
+Multer (upload de arquivos, opcional)
+
+Frontend
+
+Next.js
+
+nats.ws (ou cliente NATS via API do backend, conforme sua implementação)
+
+Axios / Fetch
+
+Tailwind CSS (opcional)
+
+Arquitetura atual: Frontend (local) ↔ Backend (local) ↔ NATS (Docker) ↔ MongoDB (local ou remoto, a seu critério).
+
+📋 Pré-requisitos
+
+Node.js 18+
+
+MongoDB (local ou remoto)
+
+Docker (para o NATS)
+
+🛠️ Configuração
+Variáveis de Ambiente
+
+Backend (./backend/.env)
+
+# API
+PORT=4000
+FRONTEND_URL=http://localhost:3000
+
+# Mongo
+MONGO_URI=mongodb://localhost:27017/chat-db
+
+# JWT
+JWT_SECRET=supersecret
+JWT_EXPIRES=1d
+
+# NATS
+# Se usar Docker local com as portas padrão:
+NATS_URL=nats://localhost:4222
+# Se estiver usando token no NATS:
+# NATS_TOKEN=meu_token_supersecreto
+# ou usuário/senha, se preferir:
+# NATS_USER=francisco
+# NATS_PASS=12345
+# Timeout opcional (ms)
+NATS_TIMEOUT_MS=8000
+
+
+Frontend (./frontend/.env.local)
+
+# Comunicação com o backend
+NEXT_PUBLIC_API_URL=http://localhost:4000
+
+# Se o frontend conectar por WebSocket ao NATS via gateway próprio,
+# exponha um endpoint no backend e use apenas o API_URL acima.
+# Caso use nats.ws diretamente (apenas se seu NATS habilitar websocket sem TLS):
+# NEXT_PUBLIC_NATS_WS_URL=ws://localhost:9222
+
+
+Dica: mantenha apenas uma estratégia de conexão do frontend (via backend ou direto nats.ws). Em produção, recomendo usar o backend como gateway.
+
+▶️ Execução
+1) Subir o NATS no Docker
+
+Você pode escolher docker-compose (recomendado) ou docker run.
+
+Opção A — docker-compose (arquivo docker-compose.yml):
+
+services:
+  nats:
+    image: nats:2
+    container_name: nats-local
+    command: ["-c", "/etc/nats/nats.conf"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "9222:9222"   # WebSocket opcional
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+    restart: unless-stopped
+
+
+Arquivo nats.conf (exemplo com token e websocket sem TLS, apenas para DEV):
+
+port: 4222
+http: 8222
+
+websocket {
+  port: 9222
+  no_tls: true
+}
+
+authorization {
+  token: "meu_token_supersecreto"
+}
+
+
+Subir o NATS:
+docker compose up -d
+
+
+Logs (opcional):
+docker logs -f nats-local
+
+
+Opção B — docker run:
+
+docker run -d --name nats-local \
+  -p 4222:4222 -p 8222:8222 -p 9222:9222 \
+  -v $(pwd)/nats.conf:/etc/nats/nats.conf:ro \
+  nats:latest -c /etc/nats/nats.conf
+
+
+⚠️ Se a porta 4222 já estiver em uso, verifique com:
+sudo lsof -i :4222 -P -n e finalize o processo conflitando.
+
+2) Rodar o Backend (local)
 cd backend
 npm install
-npm run dev
-```
+npm run start:dev
 
-2. **Frontend**
-```bash
+
+Disponível em http://localhost:4000.
+
+3) Rodar o Frontend (local)
 cd frontend
 npm install
 npm run dev
-```
 
-O frontend estará disponível em `http://localhost:3000` e o backend em `http://localhost:4000`
 
-### Com Docker
+Disponível em http://localhost:3000.
 
-1. **Execute o projeto completo**
-```bash
-docker compose up --build
-```
+🧪 Testes
+Backend — Unit
+cd backend
+npm test -- --config jest.config.ts --runInBand test/unit
 
-Para parar os containers e remover volumes:
-```bash
-docker compose down -v
-```
+Backend — E2E
+cd backend
+npm run test:e2e -- --runInBand --detectOpenHandles
 
-Para remover completamente os containers, volumes e imagens:
-```bash
-# Para os containers e remove volumes
-docker compose down -v
 
-# Remove as imagens do projeto
-docker rmi realtime-chat-project-frontend realtime-chat-project-backend
+Dicas:
 
-# Opcional: remove todas as imagens não utilizadas
-docker image prune -a
-```
+Garanta um MongoDB de teste (ex.: MONGO_URI apontando para DB separado).
 
-## 📝 Diagrama de Sequência
+Para E2E, suba o NATS antes dos testes ou use um mock client nos testes.
 
-```mermaid
+Use --runInBand para evitar condições de corrida com NATS/Mongo.
+
+📝 Fluxo (Diagrama de Sequência)
 sequenceDiagram
     participant U as Usuário
-    participant F as Frontend
-    participant B as Backend
-    participant S as Socket.IO
-    participant D as Database
+    participant F as Frontend (Next.js)
+    participant B as Backend (NestJS)
+    participant N as NATS (pub/sub)
+    participant D as MongoDB
 
-    U->>F: Entra no chat
-    F->>S: Conecta WebSocket
-    S->>B: Autentica conexão
-    B->>D:  histórico de mensagens
-    D-->>B: Retorna mensagens
-    B-->>F: Envia histórico
+    U->>F: Entra no app / login
+    F->>B: POST /auth/login (JWT)
+    B-->>F: token JWT (cookie/header)
+
+    U->>F: Abre tela de chat
+    F->>B: GET /users /chats (lista, histórico)
+    B->>D: Consulta histórico
+    D-->>B: Mensagens anteriores
+    B-->>F: Retorna histórico
+
+    F->>N: publish presence.heartbeat.<user>
+    N-->>B: presence.heartbeat.* (backend processa)
+    B-->>F: GET /presence (online/offline)
 
     U->>F: Envia mensagem
-    F->>S: Emite evento 'message'
-    S->>B: Processa mensagem
+    F->>B: POST /chat (ou publish via gateway)
+    B->>N: publish chat.direct.<toUser>
+    N-->>B: subscribe chat.direct.<toUser>
     B->>D: Salva mensagem
-    D-->>B: Confirma salvamento
-    B->>S: Broadcast para outros usuários
-    S-->>F: Atualiza chat em tempo real
-```
+    D-->>B: OK
+    B-->>F: Notifica destinatário (SSE/WebSocket/HTTP push)
 
-## 🛠️ Configuração
+📁 Estrutura do Projeto
+Backend (NestJS)
+backend/
+  src/
+    auth/          # módulos de auth (JWT/Passport)
+    users/         # usuários
+    chat/          # use-cases de chat (publish/subscribe)
+    presence/      # heartbeats, status online/offline
+    nats/          # client/factory de conexão NATS
+    common/        # filtros, guards, dtos, utils
+    main.ts
+  test/
+    unit/          # testes unitários (Jest)
+    e2e/           # testes de integração/e2e
 
-### Variáveis de Ambiente
+Frontend (Next.js)
+frontend/
+  app/ ou pages/   # conforme sua escolha de roteamento
+  components/      # componentes UI
+  lib/
+    api.ts         # chamadas ao backend
+    nats.ts        # (opcional) cliente nats.ws para DEV
+  styles/          # CSS / Tailwind
 
-**Backend (.env)**
-```env
-MONGODB_URI=mongodb://localhost:27017/chat
-SESSION_SECRET=
-PORT=4000
-FRONTEND_URL=
-```
+🧰 Comandos Úteis
 
-**Frontend (.env)**
-```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
-NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
-NEXT_PUBLIC_DOCKER=1
-NEXT_PUBLIC_API_URL=/api
-```
+Parar/remover NATS (Docker):
 
-## 📁 Estrutura do Projeto
+docker compose -f nats/docker-compose.yml down
+# ou
+docker rm -f nats-local
 
-### Backend
-- `src/`
-  - `auth/` - Configuração do Passport.js
-  - `models/` - Modelos do MongoDB
-  - `routes/` - Rotas da API
-  - `socket/` - Lógica do Socket.IO
-  - `utils/` - Funções utilitárias
 
-### Frontend
-- `components/` - Componentes React
-- `pages/` - Páginas Next.js
-- `services/` - Serviços de API
-- `styles/` - Estilos CSS
-- `utils/` - Funções utilitárias
+Limpar imagens não utilizadas:
 
-## 👤 Contribuição
+docker image prune -a
 
-1. Faça o fork do projeto
-2. Crie sua feature branch (`git checkout -b feature/nome-da-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/nome-da-feature`)
-5. Abra um Pull Request
 
-## 📄 Licença
+Verificar portas:
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+sudo lsof -i :4222 -P -n
+sudo lsof -i :8222 -P -n
+sudo lsof -i :9222 -P -n
+
+👤 Contribuição
+
+Faça fork
+
+git checkout -b feature/nome-da-feature
+
+git commit -m "feat: adiciona X"
+
+git push origin feature/nome-da-feature
+
+Abra um Pull Request
+
+📄 Autor
+Francisco de Freitas Kemle
