@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 
 export default function ChatBox({ me, peer }: { me: string; peer: string }) {
-  const { msgs, send } = useChat(me);
+  const { msgs, send } = useChat(me, peer);
   const [text, setText] = useState('');
 
   async function onSend() {
@@ -14,14 +14,11 @@ export default function ChatBox({ me, peer }: { me: string; peer: string }) {
 
   return (
     <div className="p-3 flex flex-col gap-2">
-      <div className="flex-1 border rounded p-2 min-h-[220px] overflow-auto">
-        {!msgs.length && (
-          <div className="opacity-60 text-sm">Sem mensagens ainda.</div>
-        )}
+      <div className="flex-1 overflow-y-auto border rounded p-3 bg-black/20">
         {msgs.map((m, i) => (
-          <div key={i} className={`mb-2 ${m.from === me ? 'text-right' : ''}`}>
+          <div key={`${m.from}-${m.ts}-${i}`} className="mb-2">
             <div className="text-xs opacity-60">
-              {m.from === me ? 'Você' : '@' + m.from}
+              {m.from === me ? 'você' : '@' + m.from}
             </div>
             <div className="inline-block bg-white/10 rounded px-2 py-1">
               {m.text}

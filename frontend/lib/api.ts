@@ -49,3 +49,10 @@ export async function listUsers() {
   const res = await fetch(`${API_BASE}/users`, { cache: 'no-store' });
   return handle<{ users: { username: string }[] | string[] }>(res);
 }
+
+export async function listHistory(a: string, b: string, limit = 100) {
+  const res = await fetch(`${API_BASE}/chat/history/${a}/${b}?limit=${limit}`, {
+    cache: 'no-store',
+  });
+  return handle<{ msgs: { from: string; to: string; text: string; ts: number }[] }>(res);
+}
