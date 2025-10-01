@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { appConfig } from './config/app-config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
-import { NatsModule } from './nats/nats.module';
+import { BrokerModule } from "./broker/broker.module";
 import { PresenceModule } from './presence/presence.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
     MongooseModule.forRoot(process.env.MONGODB_URI as string),
-    NatsModule,
+    BrokerModule,
     PresenceModule,
     AuthModule,
     UsersModule,

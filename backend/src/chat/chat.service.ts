@@ -1,5 +1,6 @@
+// src/chat/chat.service.ts
 import { Injectable } from '@nestjs/common';
-import { NatsService } from '../nats/nats.service';
+import { BrokerClientService } from '@/broker/broker-client.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message, MessageDocument } from './schemas/message.schema';
@@ -7,15 +8,16 @@ import { Message, MessageDocument } from './schemas/message.schema';
 @Injectable()
 export class ChatService {
   constructor(
-    private readonly nats: NatsService,
+    private readonly broker: BrokerClientService,
     @InjectModel(Message.name) private readonly msgModel: Model<MessageDocument>,
   ) {}
 
   async sendDirect(from: string, to: string, text: string) {
     const msg = { from, to, text, ts: Date.now() };
     await this.msgModel.create(msg);
+
     const subject = `chat.direct.${to}.${from}`;
-    await this.nats.publishJSON(subject, msg);
+    this.broker.publish(subject, msg);
   }
 
   async history(a: string, b: string, limit = 100, before?: number) {

@@ -1,24 +1,31 @@
 // src/presence/presence.service.ts
-import { Injectable } from '@nestjs/common';
-import { NatsService } from '../nats/nats.service';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { BrokerClientService } from '@/broker/broker-client.service';
 
 type OnlineUser = { username: string; lastSeen: number };
 
 @Injectable()
-export class PresenceService {
+export class PresenceService implements OnModuleInit {
   private online = new Map<string, OnlineUser>();
   private readonly ttlMs = 25_000;
 
-  constructor(private readonly nats: NatsService) {
-    this.nats.subscribeJSON<{ t: number }>('presence.heartbeat.*', (_m, ctx) => {
-      const username = ctx.subject.split('.').pop()!;
+  constructor(private readonly broker: BrokerClientService) {}
+
+  async onModuleInit() {
+    this.broker.subscribe('presence.heartbeat.*', (_topic, _payload, msg) => {
+      const username = msg.subject.split('.').pop()!;
       this.online.set(username, { username, lastSeen: Date.now() });
+    });
+
+    this.broker.subscribe('presence.offline.*', (_topic, _payload, msg) => {
+      const username = msg.subject.split('.').pop()!;
+      this.online.delete(username);
     });
 
     setInterval(() => {
       const now = Date.now();
-      for (const [u, info] of this.online) {
-        if (now - info.lastSeen > this.ttlMs) this.online.delete(u);
+      for (const [k, u] of this.online) {
+        if (now - u.lastSeen > this.ttlMs) this.online.delete(k);
       }
     }, 5_000);
   }
@@ -35,6 +42,6 @@ export class PresenceService {
 
   async publishOffline(username: string): Promise<void> {
     this.online.delete(username);
-    await this.nats.publishJSON(`presence.offline.${username}`, { t: Date.now() });
+    this.broker.publish(`presence.offline.${username}`, { t: Date.now() });
   }
 }
