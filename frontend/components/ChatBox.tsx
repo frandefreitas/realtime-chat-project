@@ -14,7 +14,7 @@ export default function ChatBox({ me, peer }: { me: string; peer: string }) {
 
   return (
     <div className="p-3 flex flex-col gap-2">
-      <div className="flex-1 overflow-y-auto border rounded p-3 bg-black/20">
+      <div className="flex-1 overflow-y-auto rounded bg-black/20">
         {msgs.map((m, i) => (
           <div key={`${m.from}-${m.ts}-${i}`} className="mb-2">
             <div className="text-xs opacity-60">

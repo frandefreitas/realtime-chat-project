@@ -26,7 +26,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => { setMounted(true); checkToken(); }, []);
   useEffect(() => { checkToken(); }, [pathname]);
 
-  // Heartbeat de presença enquanto logado
   useEffect(() => {
     if (!isLoggedIn) return;
 

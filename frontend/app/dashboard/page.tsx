@@ -25,7 +25,7 @@ export default function DashboardPage() {
   }, [router]);
 
   return (
-    <div className="grid md:grid-cols-[1fr_2fr] gap-4 p-4">
+    <div className="grid md:grid-cols-[1fr_2fr] gap-4">
       <aside className="border rounded p-3">
         <div className="mb-2 text-sm opacity-70">
           Logado como <b>@{me}</b>
