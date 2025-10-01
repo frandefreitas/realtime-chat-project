@@ -17,8 +17,4 @@ export class RegisterDto {
   @IsString()
   @MinLength(6)
   readonly password: string;
-
-  @IsOptional()
-  @IsString()
-  readonly avatar?: string;
 }

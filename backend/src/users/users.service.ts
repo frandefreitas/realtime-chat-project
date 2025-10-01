@@ -9,8 +9,7 @@ type CreateUserInput = {
   name: string;
   username: string;
   email: string;
-  avatar?: string;
-  password: string; // já com hash
+  password: string;
 };
 
 @Injectable()
@@ -35,8 +34,7 @@ export class UsersService {
     const doc = new this.userModel({
       ...input,
       username: input.username.toLowerCase(),
-      email: input.email.toLowerCase(),
-      avatarUrl: input.avatar,
+      email: input.email.toLowerCase()
     });
     await doc.save();
     const obj = doc.toObject();
@@ -61,28 +59,5 @@ export class UsersService {
   async findAllUsernames(): Promise<string[]> {
     const docs = await this.userModel.find({}, { username: 1, _id: 0 }).lean();
     return docs.map(d => d.username).filter(Boolean);
-  }
-
-  async updateAvatar(userId: string, avatar: string) {
-    const user = await this.userModel.findById(userId).exec();
-    if (!user) throw new NotFoundException('User not found');
-
-    if (user.avatar && user.avatar.startsWith('/uploads/')) {
-      try {
-        const localPath = join(process.cwd(), user.avatar);
-        if (fs.existsSync(localPath)) {
-          fs.unlinkSync(localPath);
-        }
-      } catch (err) {
-        console.warn('Não foi possível remover avatar antigo:', err?.message);
-      }
-    }
-  
-    user.avatar = avatar;
-    await user.save();
-  
-    const obj = user.toObject();
-    delete (obj as Partial<typeof obj> & { password?: string }).password;
-    return obj;
   }
 }

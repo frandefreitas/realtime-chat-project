@@ -6,7 +6,6 @@ Este é um projeto de chat em tempo real construído com Node.js, Socket.IO, Nex
 
 - Autenticação de usuários (registro/login)
 - Chat em tempo real
-- Upload de avatar
 - Notificações sonoras de novas mensagens
 - Interface responsiva com Tailwind CSS
 

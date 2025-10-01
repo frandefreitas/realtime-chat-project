@@ -45,12 +45,11 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    // Marca como offline
     await this.presence.publishOffline(userId);
     return { ok: true };
   }
 
-  async register(dto: RegisterDto & { avatar?: string }) {
+  async register(dto: RegisterDto) {
     const [byUser, byEmail] = await Promise.all([
       this.usersService.findByUsername(dto.username),
       this.usersService.findByEmail(dto.email),
@@ -66,7 +65,6 @@ export class AuthService {
       username: dto.username.toLowerCase(),
       email: dto.email.toLowerCase(),
       password: hashedPassword,
-      avatar: dto.avatar, // salva caminho se vier
     });
 
     return this.sign({ _id: created._id, username: created.username });
