@@ -164,7 +164,7 @@ Disponível em http://localhost:3000.
 🧪 Testes
 Backend — Unit
 cd backend
-npm test -- --config jest.config.ts --runInBand test/unit
+npm run test:handlers
 
 Backend — E2E
 cd backend
