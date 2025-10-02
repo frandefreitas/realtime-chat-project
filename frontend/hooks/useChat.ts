@@ -9,19 +9,16 @@ export function useChat(me: string, peer?: string) {
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const seen = useRef<Set<string>>(new Set());
 
-  // zera ao trocar de peer
   useEffect(() => {
     setMsgs([]);
     seen.current.clear();
   }, [peer]);
 
-  // assina NATS (apenas recebe; quem publica é o BACKEND)
   useEffect(() => {
     if (!me) return;
     let sub: any;
     (async () => {
       sub = await subscribeJSON<ChatMsg>(`chat.direct.${me}.*`, (m) => {
-        // filtra só a conversa atual
         if (!peer || (m.from !== peer && m.to !== peer)) return;
         const key = `${m.from}-${m.to}-${m.ts}`;
         if (!seen.current.has(key)) {
@@ -33,7 +30,6 @@ export function useChat(me: string, peer?: string) {
     return () => sub?.unsubscribe();
   }, [me, peer]);
 
-  // carrega histórico ao abrir a conversa
   useEffect(() => {
     if (!me || !peer) return;
     (async () => {

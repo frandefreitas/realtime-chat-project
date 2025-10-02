@@ -24,7 +24,6 @@ export default function LoginPage() {
     }
   }
 
-  // MANTENHA seu layout/estilo aqui; o markup abaixo é exemplo neutro
   return (
     <div className="max-w-sm mx-auto mt-16">
       <h1 className="text-xl font-bold mb-4">Entrar</h1>

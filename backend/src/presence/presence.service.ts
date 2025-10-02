@@ -1,4 +1,3 @@
-// src/presence/presence.service.ts
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { BrokerClientService } from '@/broker/broker-client.service';
 

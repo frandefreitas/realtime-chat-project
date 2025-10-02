@@ -54,8 +54,6 @@ export class BrokerRouter {
 
     if (handler) return handler;
 
-    // console.warn(`Warning: Not found handler for the route "${topic}".`);
-
     return undefined;
   }
 

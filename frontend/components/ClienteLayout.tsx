@@ -1,10 +1,9 @@
-// frontend/components/ClienteLayout.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
-import { publishJSON } from '@/lib/nats'; // usamos seu helper
+import { publishJSON } from '@/lib/nats'; 
 
 type JwtPayload = { sub: string; exp: number; iat: number; username?: string };
 

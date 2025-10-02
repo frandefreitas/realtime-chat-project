@@ -7,14 +7,14 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
-import { PresenceService } from '../presence/presence.service'; // << injeta presença
+import { PresenceService } from '../presence/presence.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private presence: PresenceService, // << aqui
+    private presence: PresenceService,
   ) {}
 
   private sign(user: { id?: string; _id?: any; username: string }) {

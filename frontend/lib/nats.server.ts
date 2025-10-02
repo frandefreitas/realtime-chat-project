@@ -1,4 +1,3 @@
-// src/lib/nats.ts
 import { connect, StringCodec, NatsConnection, Subscription } from 'nats';
 
 type NatsHelper = {

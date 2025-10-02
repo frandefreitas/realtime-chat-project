@@ -1,4 +1,3 @@
-// src/chat/chat.service.ts
 import { Injectable } from '@nestjs/common';
 import { BrokerClientService } from '@/broker/broker-client.service';
 import { InjectModel } from '@nestjs/mongoose';

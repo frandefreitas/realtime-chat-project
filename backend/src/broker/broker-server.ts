@@ -73,7 +73,6 @@ export class BrokerServer extends Server implements CustomTransportStrategy {
     }
 
     const response$ = this.transformToObservable(handler(payload, context));
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     response$ && this.send(response$, publish);
   }
 
@@ -94,7 +93,6 @@ export class BrokerServer extends Server implements CustomTransportStrategy {
     };
   }
 
-  // 🔧 Sem OpenTelemetry: chamada direta do handler com try/catch.
   subscriptionHandler(rawTopic: string, rawPayload: any, message: Msg) {
     let topic = rawTopic;
     let payload = rawPayload;

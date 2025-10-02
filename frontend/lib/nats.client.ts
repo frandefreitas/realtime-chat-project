@@ -1,7 +1,7 @@
 let _p: Promise<import('nats.ws').NatsConnection> | null = null;
 
 export async function getNatsClient() {
-  if (typeof window === 'undefined') return null; // garante client-side
+  if (typeof window === 'undefined') return null; 
   if (_p) return _p;
   _p = (async () => {
     const { connect } = await import('nats.ws');
