@@ -1,10 +1,17 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 
-export default function ChatBox({ me, peer }: { me: string; peer: string }) {
+type Props = {
+  me: string;
+  peer: string;
+  className?: string;
+};
+
+export default function ChatBox({ me, peer, className }: Props) {
   const { msgs, send } = useChat(me, peer);
   const [text, setText] = useState('');
+  const endRef = useRef<HTMLDivElement | null>(null);
 
   async function onSend() {
     if (!text.trim() || !peer) return;
@@ -12,30 +19,54 @@ export default function ChatBox({ me, peer }: { me: string; peer: string }) {
     setText('');
   }
 
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [msgs]);
+
   return (
-    <div className="p-3 flex flex-col gap-2">
-      <div className="flex-1 overflow-y-auto rounded bg-black/20">
-        {msgs.map((m, i) => (
-          <div key={`${m.from}-${m.ts}-${i}`} className="mb-2">
-            <div className="text-xs opacity-60">
-              {m.from === me ? 'você' : '@' + m.from}
+    <div className={`flex flex-col ${className ?? 'h-[80vh]'} p-3 flex-space-between`}>
+
+      <div className="flex-1 overflow-y-auto rounded bg-black/20 p-3 space-y-3 custom-scroll">
+        {msgs.map((m, i) => {
+          const isMe = m.from === me;
+          return (
+            <div
+              key={`${m.from}-${m.ts}-${i}`}
+              className={`flex ${isMe ? 'justify-start' : 'justify-end'}`}
+            >
+              <div className="max-w-[70%]">
+                <div className="text-xs opacity-60 mb-1">
+                  {isMe ? 'você' : '@' + m.from}
+                </div>
+
+                <div
+                  className={`relative px-3 py-2 rounded-lg break-words text-white ${
+                    isMe
+                      ? 'bg-blue-600 rounded-bl-none'
+                      : 'bg-gray-700 rounded-br-none'
+                  }`}
+                >
+                  {m.text}
+                </div>
+              </div>
             </div>
-            <div className="inline-block bg-white/10 rounded px-2 py-1">
-              {m.text}
-            </div>
-          </div>
-        ))}
+          );
+        })}
+        <div ref={endRef} />
       </div>
 
-      <div className="flex gap-2">
+      <div className="shrink-0 mt-0 flex gap-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Digite uma mensagem..."
-          className="flex-1 px-3 py-2 rounded bg-white/5 border"
+          className="flex-1 px-3 py-2 rounded bg-white/5 border border-gray-600 text-white outline-none focus:border-blue-500"
           onKeyDown={(e) => e.key === 'Enter' && onSend()}
         />
-        <button onClick={onSend} className="px-4 py-2 rounded bg-blue-600">
+        <button
+          onClick={onSend}
+          className="px-4 py-2 rounded-md bg-gray-800 hover:bg-gray-700 text-white transition"
+        >
           Enviar
         </button>
       </div>
