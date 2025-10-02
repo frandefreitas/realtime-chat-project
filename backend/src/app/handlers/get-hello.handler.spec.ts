@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetHelloHandler } from './get-hello.handler';
-import { AppService } from '../app.service';
+import { AppService } from '../../app.service';
 
 describe('GetHelloHandler', () => {
   let handler: GetHelloHandler;

@@ -1,25 +1,44 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoginHandler } from './login.handler';
-import { AuthService } from '../auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '@/users/users.service';
+
+jest.mock('bcrypt', () => ({ compare: jest.fn(async () => true) }));
 
 describe('LoginHandler', () => {
   let handler: LoginHandler;
-  const mockAuth = { login: jest.fn(async () => ({ token: 'fake', username: 'francisco', userId: '1' })) };
+
+  const findOne = jest.fn(() => ({
+    select: jest.fn().mockResolvedValue({
+      _id: '1',
+      username: 'francisco',
+      password: '$2b$10$hash',
+    }),
+  }));
+
+  const mockUsersService: Partial<UsersService> = {
+    // @ts-ignore
+    userModel: { findOne },
+  };
+
+  const mockJwt: Partial<JwtService> = {
+    signAsync: jest.fn(async () => 'fake-token'),
+  };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoginHandler,
-        { provide: AuthService, useValue: mockAuth },
+        { provide: UsersService, useValue: mockUsersService },
+        { provide: JwtService, useValue: mockJwt },
       ],
     }).compile();
 
     handler = module.get(LoginHandler);
   });
 
-  it('delegates to AuthService.login', async () => {
+  it('logs in with username and returns token', async () => {
     const res = await handler.execute({ usernameOrEmail: 'francisco', password: 'x' });
-    expect(mockAuth.login).toHaveBeenCalledWith('francisco', 'x');
-    expect(res.token).toBe('fake');
+    expect(res.token).toBe('fake-token');
   });
 });

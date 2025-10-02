@@ -2,14 +2,8 @@ import {
   Controller,
   Get,
   Param,
-  Post,
-  UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 
 @Controller('users')
 export class UsersController {
