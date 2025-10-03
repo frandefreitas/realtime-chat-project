@@ -1,4 +1,3 @@
-// src/chat/chat.controller.ts
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { SendDirectHandler } from './handlers/send-direct.handler';
 import { GetHistoryHandler } from './handlers/get-history.handler';

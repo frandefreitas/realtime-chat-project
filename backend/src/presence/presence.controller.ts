@@ -1,4 +1,3 @@
-// src/presence/presence.controller.ts
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { GetOnlineHandler, GetOnlineCommand } from './handlers/get-online.handler';
 import { PublishOnlineHandler } from './handlers/publish-online.handler';
