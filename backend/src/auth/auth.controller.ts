@@ -4,15 +4,10 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
-  UseInterceptors,
-  UploadedFile,
   UseGuards,
   Req,
   BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import * as fs from 'fs';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
