@@ -10,6 +10,7 @@ Interface responsiva (Tailwind opcional)
 Testes unitários (Jest) e E2E (Jest/Supertest)
 
 🔧 Tecnologias
+
 Backend
 NestJS
 NATS (client @nats-io/nats)
