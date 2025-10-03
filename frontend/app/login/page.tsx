@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { login } from '@/lib/api';
 import { startPresenceHeartbeat } from '@/lib/presence';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,14 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
 
+  const [checking, setChecking] = useState(true);
+  useEffect(() => {
+    const hasToken = document.cookie.split('; ').some(c => c.startsWith('token='));
+    if (hasToken) router.replace('/dashboard');
+    else setChecking(false);
+  }, [router]);
+  if (checking) return null;
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
@@ -19,8 +27,8 @@ export default function LoginPage() {
       document.cookie = `username=${encodeURIComponent(username)}; Path=/;`;
       startPresenceHeartbeat(username);
       router.push('/dashboard');
-    } catch (e: any) {
-      setErr(e?.message ?? 'Erro ao logar');
+    } catch (error: any) {
+      setErr(error?.message ?? 'Erro ao logar');
     }
   }
 

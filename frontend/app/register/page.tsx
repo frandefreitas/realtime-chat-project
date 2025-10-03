@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { register } from '@/lib/api';
 import { startPresenceHeartbeat } from '@/lib/presence';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,14 @@ export default function RegisterPage() {
   });
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
+
+  const [checking, setChecking] = useState(true);
+  useEffect(() => {
+    const hasToken = document.cookie.split('; ').some(c => c.startsWith('token='));
+    if (hasToken) router.replace('/dashboard');
+    else setChecking(false);
+  }, [router]);
+  if (checking) return null;
 
   function upd<K extends keyof typeof form>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
