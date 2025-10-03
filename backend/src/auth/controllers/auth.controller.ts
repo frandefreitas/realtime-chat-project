@@ -1,10 +1,10 @@
 import { Body, Controller, Post, UsePipes, ValidationPipe, UseGuards, Req } from '@nestjs/common';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { JwtAuthGuard } from '../auth/jwt.guard';
-import { LoginHandler, LoginCommand } from './handlers/login.handler';
-import { RegisterHandler, RegisterCommand } from './handlers/register.handler';
-import { LogoutHandler, LogoutCommand } from './handlers/logout.handler';
+import { LoginDto } from '../dto/login.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { JwtAuthGuard } from '../jwt.guard';
+import { LoginHandler, LoginCommand } from '../handlers/login.handler';
+import { RegisterHandler, RegisterCommand } from '../handlers/register.handler';
+import { LogoutHandler, LogoutCommand } from '../handlers/logout.handler';
 
 @Controller('auth')
 export class AuthController {

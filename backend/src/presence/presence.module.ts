@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PresenceController } from './presence.controller';
+import { PresenceController } from './controllers/presence.controller';
 import { PresenceService } from './presence.service';
 import { GetOnlineHandler } from './handlers/get-online.handler';
 import { PublishOnlineHandler } from './handlers/publish-online.handler';
