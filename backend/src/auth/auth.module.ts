@@ -24,7 +24,13 @@ import { LogoutHandler } from './handlers/logout.handler';
     }),
     PresenceModule,
   ],
-  providers: [AuthService, JwtStrategy, LoginHandler, RegisterHandler, LogoutHandler],
+  providers: [
+    AuthService, 
+    JwtStrategy, 
+    LoginHandler, 
+    RegisterHandler, 
+    LogoutHandler
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}
