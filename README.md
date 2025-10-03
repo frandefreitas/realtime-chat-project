@@ -164,7 +164,10 @@ Disponível em http://localhost:3000.
 🧪 Testes
 Backend — Unit
 cd backend
+Para testar os handlers
 npm run test:handlers
+Para testar os controllers
+npm test -- src/**/controllers/*.spec.ts
 
 Backend — E2E
 cd backend
