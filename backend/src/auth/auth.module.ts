@@ -5,6 +5,10 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { PresenceModule } from 'src/presence/presence.module';
+import { JwtStrategy } from './jwt.strategy';
+import { LoginHandler } from './handlers/login.handler';
+import { RegisterHandler } from './handlers/register.handler';
+import { LogoutHandler } from './handlers/logout.handler';
 
 @Module({
   imports: [
@@ -20,7 +24,7 @@ import { PresenceModule } from 'src/presence/presence.module';
     }),
     PresenceModule,
   ],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy, LoginHandler, RegisterHandler, LogoutHandler],
   controllers: [AuthController],
 })
 export class AuthModule {}
