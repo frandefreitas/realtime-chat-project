@@ -24,7 +24,7 @@ export default function ChatBox({ me, peer, className }: Props) {
   }, [msgs]);
 
   return (
-    <section className={`flex flex-col ${className ?? 'h[80vh]'} h-[81vh] min-h-0 rounded`}>
+    <section className={`flex flex-col ${className ?? 'h[80vh]'} h-[82vh] min-h-0 rounded`}>
       <div className="shrink-0 px-3 py-2">
         <span className="text-sm opacity-80">Conversando com <strong>@{peer}</strong></span>
       </div>

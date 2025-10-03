@@ -17,8 +17,8 @@ export default function UserList({ me, selected, onSelect }: Props) {
       const { users } = await listUsers();
       const list = Array.isArray(users)
         ? (typeof (users as any)[0] === 'string'
-            ? (users as string[])
-            : (users as any[]).map(u => u.username))
+          ? (users as string[])
+          : (users as any[]).map(u => u.username))
         : [];
       setAllUsers(list.filter(Boolean));
     }
@@ -40,15 +40,15 @@ export default function UserList({ me, selected, onSelect }: Props) {
   const offlineUsers = allUsers.filter(u => u !== me && !onlineUsers.includes(u));
 
   return (
-    <aside className="h-[80vh] min-h-0 flex flex-col border-white/20 bg-black/20">
-      <div className="shrink-0 p-4 pb-2">
+    <aside className="h-[80vh] min-h-0 flex flex-col border-white/20">
+      <div className="shrink-0 p-0 pb-2">
         <div className="text-sm opacity-80">
           Logado como <span className="font-semibold">@{me}</span>
         </div>
-        <h3 className="font-semibold mt-3">Online</h3>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scroll px-4 pb-4">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scroll px-2 pb-4 bg-black/20">
+        <h3 className="font-semibold mt-3">Online</h3>
         <ul className="space-y-1">
           {visibleOnline.map(u => (
             <li
