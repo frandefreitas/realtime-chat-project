@@ -27,9 +27,6 @@ export default function DashboardPage() {
   return (
     <div className="grid md:grid-cols-[1fr_2fr] gap-4">
       <aside className="border rounded p-3">
-        <div className="mb-2 text-sm opacity-70">
-          Logado como <b>@{me}</b>
-        </div>
         <UserList me={me} selected={peer?.username} onSelect={setPeer} />
       </aside>
 

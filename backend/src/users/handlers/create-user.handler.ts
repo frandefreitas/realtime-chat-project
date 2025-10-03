@@ -1,28 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ICommandHandler } from '@/common/interfaces/command-handler.interface';
 import { UsersService } from '../users.service';
-import * as bcrypt from 'bcrypt';
 
 export interface CreateUserCommand {
-  name: string;
   username: string;
   email: string;
   password: string;
+  name?: string;
+  [k: string]: any;
 }
-export interface CreateUserResponse { id: string; username: string; email: string; }
+export type CreateUserResult = any;
 
 @Injectable()
-export class CreateUserHandler implements ICommandHandler<CreateUserCommand, CreateUserResponse> {
+export class CreateUserHandler
+  implements ICommandHandler<CreateUserCommand, CreateUserResult>
+{
   constructor(private readonly users: UsersService) {}
 
-  async execute(cmd: CreateUserCommand): Promise<CreateUserResponse> {
-    const password = await bcrypt.hash(cmd.password, 10);
-    const u = await (this.users as any).userModel.create({
-      name: cmd.name,
-      username: cmd.username.toLowerCase(),
-      email: cmd.email.toLowerCase(),
-      password,
-    });
-    return { id: String(u._id), username: u.username, email: u.email };
+  async execute(cmd: CreateUserCommand): Promise<CreateUserResult> {
+    if (!cmd.username || !cmd.email || !cmd.password) {
+      throw new BadRequestException('username, email and password are required');
+    }
+
+    const payload = {
+      ...cmd,
+      name: (cmd.name ?? cmd.username).trim(),
+      username: String(cmd.username).trim(),
+      email: String(cmd.email).toLowerCase().trim(),
+    };
+
+    const created = await this.users.create(payload as any); 
+    return created;
   }
 }

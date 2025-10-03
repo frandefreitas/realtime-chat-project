@@ -3,10 +3,12 @@ import { ICommandHandler } from '@/common/interfaces/command-handler.interface';
 import { PresenceService } from '../presence.service';
 
 export interface GetOnlineCommand {}
-export interface GetOnlineResult { users: any[]; }
+export interface GetOnlineResult { users: any[] }
 
 @Injectable()
-export class GetOnlineHandler implements ICommandHandler<GetOnlineCommand, GetOnlineResult> {
+export class GetOnlineHandler
+  implements ICommandHandler<GetOnlineCommand, GetOnlineResult>
+{
   constructor(private readonly presence: PresenceService) {}
 
   async execute(_: GetOnlineCommand): Promise<GetOnlineResult> {

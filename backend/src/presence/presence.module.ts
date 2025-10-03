@@ -1,12 +1,15 @@
+// src/presence/presence.module.ts
 import { Module } from '@nestjs/common';
-import { BrokerModule } from '@/broker/broker.module';
-import { PresenceService } from './presence.service';
 import { PresenceController } from './presence.controller';
+import { PresenceService } from './presence.service';
+import { GetOnlineHandler } from './handlers/get-online.handler';
+import { PublishOnlineHandler } from './handlers/publish-online.handler';
+import { BrokerModule } from '@/broker/broker.module';
 
 @Module({
   imports: [BrokerModule],
-  providers: [PresenceService],
   controllers: [PresenceController],
+  providers: [PresenceService, GetOnlineHandler, PublishOnlineHandler],
   exports: [PresenceService],
 })
 export class PresenceModule {}

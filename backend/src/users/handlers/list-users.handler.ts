@@ -3,10 +3,12 @@ import { ICommandHandler } from '@/common/interfaces/command-handler.interface';
 import { UsersService } from '../users.service';
 
 export interface ListUsersCommand {}
-export interface ListUsersResult { users: string[]; }
+export interface ListUsersResult { users: any[] }
 
 @Injectable()
-export class ListUsersHandler implements ICommandHandler<ListUsersCommand, ListUsersResult> {
+export class ListUsersHandler
+  implements ICommandHandler<ListUsersCommand, ListUsersResult>
+{
   constructor(private readonly users: UsersService) {}
 
   async execute(_: ListUsersCommand): Promise<ListUsersResult> {

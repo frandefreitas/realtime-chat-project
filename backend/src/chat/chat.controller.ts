@@ -1,29 +1,32 @@
+// src/chat/chat.controller.ts
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { SendDirectHandler } from './handlers/send-direct.handler';
+import { GetHistoryHandler } from './handlers/get-history.handler';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chat: ChatService) {}
+  constructor(
+    private readonly sendDirect: SendDirectHandler,
+    private readonly getHistory: GetHistoryHandler,
+  ) {}
 
   @Post('send')
-  async send(@Body() body: { from: string; to: string; text: string }) {
-    await this.chat.sendDirect(body.from, body.to, body.text);
-    return { ok: true };
+  send(@Body() body: { from: string; to: string; text: string }) {
+    return this.sendDirect.execute(body);
   }
 
   @Get('history/:a/:b')
-  async history(
+  history(
     @Param('a') a: string,
     @Param('b') b: string,
     @Query('limit') limit = '100',
     @Query('before') before?: string,
   ) {
-    const msgs = await this.chat.history(
+    return this.getHistory.execute({
       a,
       b,
-      Number(limit),
-      before ? Number(before) : undefined,
-    );
-    return { msgs };
+      limit: Number(limit),
+      before: before ? Number(before) : undefined,
+    });
   }
 }

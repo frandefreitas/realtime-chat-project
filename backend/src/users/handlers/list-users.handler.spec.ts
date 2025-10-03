@@ -4,7 +4,9 @@ import { UsersService } from '../users.service';
 
 describe('ListUsersHandler', () => {
   let handler: ListUsersHandler;
-  const mockUsers = { findAllUsernames: jest.fn(async () => ['a','b']) };
+  const mockUsers = {
+    findAllUsernames: jest.fn(async () => [{ _id: '1', username: 'a' }]),
+  };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -17,8 +19,11 @@ describe('ListUsersHandler', () => {
     handler = module.get(ListUsersHandler);
   });
 
-  it('lists usernames', async () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('retorna lista de users', async () => {
     const res = await handler.execute({});
-    expect(res.users).toEqual(['a','b']);
+    expect(mockUsers.findAllUsernames).toHaveBeenCalled();
+    expect(res.users).toHaveLength(1);
   });
 });

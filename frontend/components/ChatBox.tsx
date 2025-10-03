@@ -20,31 +20,27 @@ export default function ChatBox({ me, peer, className }: Props) {
   }
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [msgs]);
 
   return (
-    <div className={`flex flex-col ${className ?? 'h-[80vh]'} p-3 flex-space-between`}>
+    <section className={`flex flex-col ${className ?? 'h[80vh]'} h-[81vh] min-h-0 rounded`}>
+      <div className="shrink-0 px-3 py-2">
+        <span className="text-sm opacity-80">Conversando com <strong>@{peer}</strong></span>
+      </div>
 
-      <div className="flex-1 overflow-y-auto rounded bg-black/20 p-3 space-y-3 custom-scroll">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scroll bg-black/20 p-3 space-y-3">
         {msgs.map((m, i) => {
           const isMe = m.from === me;
           return (
-            <div
-              key={`${m.from}-${m.ts}-${i}`}
-              className={`flex ${isMe ? 'justify-start' : 'justify-end'}`}
-            >
+            <div key={`${m.from}-${m.ts}-${i}`} className={`flex ${isMe ? 'justify-start' : 'justify-end'}`}>
               <div className="max-w-[70%]">
                 <div className="text-xs opacity-60 mb-1">
                   {isMe ? 'você' : '@' + m.from}
                 </div>
-
                 <div
-                  className={`relative px-3 py-2 rounded-lg break-words text-white ${
-                    isMe
-                      ? 'bg-blue-600 rounded-bl-none'
-                      : 'bg-gray-700 rounded-br-none'
-                  }`}
+                  className={`px-3 py-2 rounded-lg break-words text-white
+                    ${isMe ? 'bg-blue-600 rounded-bl-none' : 'bg-gray-700 rounded-br-none'}`}
                 >
                   {m.text}
                 </div>
@@ -55,7 +51,7 @@ export default function ChatBox({ me, peer, className }: Props) {
         <div ref={endRef} />
       </div>
 
-      <div className="shrink-0 mt-0 flex gap-2">
+      <div className="shrink-0 px-3 py-3 flex gap-2 bg-transparent">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -70,6 +66,6 @@ export default function ChatBox({ me, peer, className }: Props) {
           Enviar
         </button>
       </div>
-    </div>
+    </section>
   );
 }

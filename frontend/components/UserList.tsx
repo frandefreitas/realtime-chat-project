@@ -40,35 +40,53 @@ export default function UserList({ me, selected, onSelect }: Props) {
   const offlineUsers = allUsers.filter(u => u !== me && !onlineUsers.includes(u));
 
   return (
-    <div className="p-4">
-      <h3 className="font-semibold mb-2">Online</h3>
-      <ul>
-        {visibleOnline.map(u => (
-          <li
-            key={u}
-            className={`cursor-pointer p-1 rounded ${selected === u ? 'bg-blue-500/30' : ''}`}
-            onClick={() => onSelect({ username: u, online: true })}
-          >
-            🟢 @{u}
-          </li>
-        ))}
-        {visibleOnline.length === 0 && (
-          <li className="opacity-60 text-sm">Ninguém online</li>
-        )}
-      </ul>
+    <aside className="h-[80vh] min-h-0 flex flex-col border-white/20 bg-black/20">
+      <div className="shrink-0 p-4 pb-2">
+        <div className="text-sm opacity-80">
+          Logado como <span className="font-semibold">@{me}</span>
+        </div>
+        <h3 className="font-semibold mt-3">Online</h3>
+      </div>
 
-      <h3 className="font-semibold mt-4 mb-2">Offline</h3>
-      <ul className="opacity-60">
-        {offlineUsers.map(u => (
-          <li
-            key={u}
-            className={`cursor-pointer p-1 rounded ${selected === u ? 'bg-gray-500/30' : ''}`}
-            onClick={() => onSelect({ username: u, online: false })}
-          >
-            ⚪ @{u}
-          </li>
-        ))}
-      </ul>
-    </div>
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scroll px-4 pb-4">
+        <ul className="space-y-1">
+          {visibleOnline.map(u => (
+            <li
+              key={u}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelect({ username: u, online: true })}
+              onKeyDown={(e) => e.key === 'Enter' && onSelect({ username: u, online: true })}
+              className={`select-none cursor-pointer rounded px-2 py-1 flex items-center gap-2
+                ${selected === u ? 'bg-blue-500/30' : 'hover:bg-white/5'}`}
+            >
+              <span className="inline-block h-3 w-3 rounded-full bg-green-500" />
+              <span>@{u}</span>
+            </li>
+          ))}
+          {visibleOnline.length === 0 && (
+            <li className="opacity-60 text-sm">Ninguém online</li>
+          )}
+        </ul>
+
+        <h3 className="font-semibold mt-4 mb-2">Offline</h3>
+        <ul className="space-y-1 opacity-80">
+          {offlineUsers.map(u => (
+            <li
+              key={u}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelect({ username: u, online: false })}
+              onKeyDown={(e) => e.key === 'Enter' && onSelect({ username: u, online: false })}
+              className={`select-none cursor-pointer rounded px-2 py-1 flex items-center gap-2
+                ${selected === u ? 'bg-gray-500/30' : 'hover:bg-white/5'}`}
+            >
+              <span className="inline-block h-3 w-3 rounded-full bg-gray-400" />
+              <span>@{u}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
   );
 }

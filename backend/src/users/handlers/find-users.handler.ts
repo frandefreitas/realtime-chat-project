@@ -3,17 +3,30 @@ import { ICommandHandler } from '@/common/interfaces/command-handler.interface';
 import { UsersService } from '../users.service';
 
 export interface FindUsersCommand { q?: string }
-export interface FindUsersResponse { users: Array<{ id: string; username: string }>; }
+export interface FindUsersResult { users: any[] }
 
 @Injectable()
-export class FindUsersHandler implements ICommandHandler<FindUsersCommand, FindUsersResponse> {
+export class FindUsersHandler
+  implements ICommandHandler<FindUsersCommand, FindUsersResult>
+{
   constructor(private readonly users: UsersService) {}
 
-  async execute(cmd: FindUsersCommand): Promise<FindUsersResponse> {
-    const usernames = await this.users.findAllUsernames();
-    const filtered = cmd.q
-      ? usernames.filter(u => u.toLowerCase().includes(cmd.q!.toLowerCase()))
-      : usernames;
-    return { users: filtered.map(u => ({ id: u, username: u })) };
+  async execute(cmd: FindUsersCommand): Promise<FindUsersResult> {
+    const q = (cmd.q ?? '').toLowerCase();
+    const DEFAULT_LIMIT = 50;
+
+    const all = await this.users.findAllUsernames();
+
+    const users = (Array.isArray(all) ? all : [])
+      .filter((u: any) => {
+        if (!q) return true;
+        const username = String(u?.username ?? '').toLowerCase();
+        const name = String(u?.name ?? '').toLowerCase();
+        const email = String(u?.email ?? '').toLowerCase();
+        return username.includes(q) || name.includes(q) || email.includes(q);
+      })
+      .slice(0, DEFAULT_LIMIT);
+
+    return { users };
   }
 }
