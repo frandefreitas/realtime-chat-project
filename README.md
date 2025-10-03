@@ -65,27 +65,12 @@ MONGO_URI=mongodb://localhost:27017/chat-db
 JWT_SECRET=supersecret
 JWT_EXPIRES=1d
 
-# NATS
-# Se usar Docker local com as portas padrão:
-NATS_URL=nats://localhost:4222
-# Se estiver usando token no NATS:
-# NATS_TOKEN=meu_token_supersecreto
-# ou usuário/senha, se preferir:
-# NATS_USER=francisco
-# NATS_PASS=12345
-# Timeout opcional (ms)
-NATS_TIMEOUT_MS=8000
-
-
-Frontend (./frontend/.env.local)
 
 # Comunicação com o backend
 NEXT_PUBLIC_API_URL=http://localhost:4000
 
-# Se o frontend conectar por WebSocket ao NATS via gateway próprio,
-# exponha um endpoint no backend e use apenas o API_URL acima.
 # Caso use nats.ws diretamente (apenas se seu NATS habilitar websocket sem TLS):
-# NEXT_PUBLIC_NATS_WS_URL=ws://localhost:9222
+NEXT_PUBLIC_NATS_WS_URL=ws://localhost:9222
 
 
 Dica: mantenha apenas uma estratégia de conexão do frontend (via backend ou direto nats.ws). Em produção, recomendo usar o backend como gateway.
