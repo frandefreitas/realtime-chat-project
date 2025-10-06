@@ -1,31 +1,43 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ICommandHandler } from '@/common/interfaces/command-handler.interface';
-import { UsersService } from '@/users/users.service';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { JwtService } from '@nestjs/jwt'
+import * as bcrypt from 'bcrypt'
+import { User, UserDocument } from '@/users/schemas/user.schema'
+import { ICommandHandler } from '@/common/interfaces/command-handler.interface'
 
-export interface LoginCommand { usernameOrEmail: string; password: string; }
-export interface LoginResult { token: string; username: string; userId: string; }
+export interface LoginCommand {
+  usernameOrEmail: string
+  password: string
+}
+
+export interface LoginResult {
+  access_token: string
+}
 
 @Injectable()
 export class LoginHandler implements ICommandHandler<LoginCommand, LoginResult> {
   constructor(
-    private readonly users: UsersService,
-    private readonly jwt: JwtService,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async execute(cmd: LoginCommand): Promise<LoginResult> {
-    const q = cmd.usernameOrEmail.trim().toLowerCase();
-    const user = await (this.users as any).userModel
+  async validate(username: string, password: string) {
+    const q = username.toLowerCase()
+    const user = await this.userModel
       .findOne(q.includes('@') ? { email: q } : { username: q })
-      .select('+password');
+      .select('+password')
 
-    if (!user) throw new UnauthorizedException('Credenciais inválidas');
-    const ok = await bcrypt.compare(cmd.password, user.password);
-    if (!ok) throw new UnauthorizedException('Credenciais inválidas');
+    if (!user) return null
+    const ok = await bcrypt.compare(password, user.password ?? '')
+    return ok ? user : null
+  }
 
-    const payload = { sub: String(user._id), username: user.username };
-    const token = await this.jwt.signAsync(payload);
-    return { token, username: user.username, userId: String(user._id) };
+  async execute({ usernameOrEmail, password }: LoginCommand): Promise<LoginResult> {
+    const user = await this.validate(usernameOrEmail, password)
+    if (!user) throw new UnauthorizedException('Invalid credentials')
+
+    const payload = { sub: String(user._id), username: user.username }
+    return { access_token: this.jwtService.sign(payload) }
   }
 }

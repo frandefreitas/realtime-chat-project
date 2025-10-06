@@ -1,14 +1,19 @@
-import { Module } from '@nestjs/common';
-import { PresenceController } from './controllers/presence.controller';
-import { PresenceService } from './presence.service';
-import { GetOnlineHandler } from './handlers/get-online.handler';
-import { PublishOnlineHandler } from './handlers/publish-online.handler';
-import { BrokerModule } from '@/broker/broker.module';
+import { Module } from '@nestjs/common'
+import { MongooseModule } from '@nestjs/mongoose'
+import { BrokerModule } from '@/broker/broker.module'
+import { PresenceController } from './controllers/presence.controller'
+import { GetOnlineHandler } from './handlers/get-online.handler'
+import { PublishOnlineHandler } from './handlers/publish-online.handler'
+import { PublishOfflineHandler } from './handlers/publish-offline.handler'
+import { User, UserSchema } from '@/users/schemas/user.schema'
 
 @Module({
-  imports: [BrokerModule],
+  imports: [
+    BrokerModule,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
   controllers: [PresenceController],
-  providers: [PresenceService, GetOnlineHandler, PublishOnlineHandler],
-  exports: [PresenceService],
+  providers: [GetOnlineHandler, PublishOnlineHandler, PublishOfflineHandler],
+  exports: [GetOnlineHandler, PublishOnlineHandler, PublishOfflineHandler],
 })
 export class PresenceModule {}

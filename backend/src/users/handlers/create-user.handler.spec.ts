@@ -1,53 +1,55 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CreateUserHandler } from './create-user.handler';
-import { UsersService } from '../users.service';
-import { BadRequestException } from '@nestjs/common';
+import { CreateUserHandler } from './create-user.handler'
+import { BadRequestException } from '@nestjs/common'
+
+jest.mock('bcrypt', () => ({ hash: jest.fn() }))
+import * as bcrypt from 'bcrypt'
+
+const lean = <T>(v: T) => ({ lean: jest.fn().mockResolvedValue(v) })
 
 describe('CreateUserHandler', () => {
-  let handler: CreateUserHandler;
-  const mockUsers = {
-    create: jest.fn(async (dto) => ({ _id: 'id1', ...dto })),
-  };
+  let findOne: jest.Mock
+  let ModelCtor: any
 
-  beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CreateUserHandler,
-        { provide: UsersService, useValue: mockUsers },
-      ],
-    }).compile();
+  beforeEach(() => {
+    findOne = jest.fn()
+    ModelCtor = jest.fn()
+    ;(bcrypt.hash as jest.Mock).mockReset()
+  })
 
-    handler = module.get(CreateUserHandler);
-  });
+  it('should throw if username or email is already in use', async () => {
+    findOne.mockReturnValueOnce(lean({ _id: '1' }))
+    ModelCtor.findOne = findOne
 
-  beforeEach(() => jest.clearAllMocks());
+    const handler = new CreateUserHandler(ModelCtor as any)
 
-  it('preenche name com username quando não vier name', async () => {
-    const res = await handler.execute({
-      username: 'John ',
-      email: ' JOHN@EXAMPLE.COM ',
-      password: 'x',
-    });
-    expect(mockUsers.create).toHaveBeenCalled();
-    expect(res).toHaveProperty('_id', 'id1');
-    expect(res.name).toBe('John');
-    expect(res.username).toBe('John');
-    expect(res.email).toBe('john@example.com');
-  });
+    await expect(
+      handler.execute({ username: 'joao', email: 'joao@mail.com', password: '123' }),
+    ).rejects.toThrow(BadRequestException)
+  })
 
-  it('usa name quando fornecido', async () => {
-    const res = await handler.execute({
-      name: 'John Doe',
-      username: 'jdoe',
-      email: 'JD@E.COM',
-      password: 'x',
-    });
-    expect(res.name).toBe('John Doe');
-    expect(res.username).toBe('jdoe');
-    expect(res.email).toBe('jd@e.com');
-  });
+  it('should create user successfully and return sanitized object', async () => {
+    findOne.mockReturnValueOnce(lean(null))
+    ModelCtor.findOne = findOne
 
-  it('lança erro sem campos obrigatórios', async () => {
-    await expect(handler.execute({} as any)).rejects.toBeInstanceOf(BadRequestException);
-  });
-});
+    const save = jest.fn().mockResolvedValue(undefined)
+    const toObject = jest.fn().mockReturnValue({
+      _id: '1',
+      username: 'joao',
+      email: 'j@mail.com',
+      password: 'HASHED',
+    })
+    ModelCtor.mockImplementation((data: any) => ({ ...data, save, toObject }))
+
+    ;(bcrypt.hash as jest.Mock).mockResolvedValue('HASHED')
+
+    const handler = new CreateUserHandler(ModelCtor as any)
+
+    const res = await handler.execute({ username: 'joao', email: 'j@mail.com', password: '123456' })
+
+    expect(bcrypt.hash).toHaveBeenCalledWith('123456', 10)
+    expect(save).toHaveBeenCalled()
+    expect(toObject).toHaveBeenCalled()
+    expect(res).toMatchObject({ _id: '1', username: 'joao', email: 'j@mail.com' })
+    expect((res as any).password).toBeUndefined()
+  })
+})

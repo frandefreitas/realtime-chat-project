@@ -1,29 +1,35 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ListUsersHandler } from './list-users.handler';
-import { UsersService } from '../users.service';
+import 'reflect-metadata'
+import { Test } from '@nestjs/testing'
+import { getModelToken } from '@nestjs/mongoose'
+import { ListUsersHandler } from './list-users.handler'
+import { User } from '../schemas/user.schema'
+
+const lean = <T>(v: T) => ({ lean: jest.fn().mockResolvedValue(v) })
 
 describe('ListUsersHandler', () => {
-  let handler: ListUsersHandler;
-  const mockUsers = {
-    findAllUsernames: jest.fn(async () => [{ _id: '1', username: 'a' }]),
-  };
+  let handler: ListUsersHandler
+  let modelMock: any
 
-  beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+  beforeEach(async () => {
+    modelMock = { find: jest.fn() }
+
+    const moduleRef = await Test.createTestingModule({
       providers: [
         ListUsersHandler,
-        { provide: UsersService, useValue: mockUsers },
+        { provide: getModelToken(User.name), useValue: modelMock },
       ],
-    }).compile();
+    }).compile()
 
-    handler = module.get(ListUsersHandler);
-  });
+    handler = moduleRef.get(ListUsersHandler)
+    jest.clearAllMocks()
+  })
 
-  beforeEach(() => jest.clearAllMocks());
-
-  it('retorna lista de users', async () => {
-    const res = await handler.execute({});
-    expect(mockUsers.findAllUsernames).toHaveBeenCalled();
-    expect(res.users).toHaveLength(1);
-  });
-});
+  it('lista usuários', async () => {
+    modelMock.find.mockReturnValue(
+      lean([{ _id: '1', username: 'a' }, { _id: '2', username: 'b' }]),
+    )
+    const res = await handler.execute({})
+    expect(res.users).toHaveLength(2)
+    expect(modelMock.find).toHaveBeenCalledWith({}, { username: 1, name: 1, email: 1 })
+  })
+})

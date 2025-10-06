@@ -1,34 +1,44 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { GetUserByIdHandler } from './get-user-by-id.handler';
-import { UsersService } from '../users.service';
-import { NotFoundException } from '@nestjs/common';
+import 'reflect-metadata'
+import { Test } from '@nestjs/testing'
+import { getModelToken } from '@nestjs/mongoose'
+import { NotFoundException } from '@nestjs/common'
+import { GetUserByIdHandler } from './get-user-by-id.handler'
+import { User } from '../schemas/user.schema'
+
+const lean = <T>(v: T) => ({ lean: jest.fn().mockResolvedValue(v) })
 
 describe('GetUserByIdHandler', () => {
-  let handler: GetUserByIdHandler;
-  const mockUsers = {
-    findById: jest.fn(async (id: string) => (id === '1' ? { _id: '1', username: 'john' } : null)),
-  };
+  let handler: GetUserByIdHandler
+  let modelMock: any
 
-  beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+  beforeEach(async () => {
+    modelMock = { findById: jest.fn() }
+
+    const moduleRef = await Test.createTestingModule({
       providers: [
         GetUserByIdHandler,
-        { provide: UsersService, useValue: mockUsers },
+        { provide: getModelToken(User.name), useValue: modelMock },
       ],
-    }).compile();
+    }).compile()
 
-    handler = module.get(GetUserByIdHandler);
-  });
+    handler = moduleRef.get(GetUserByIdHandler)
+    jest.clearAllMocks()
+  })
 
-  beforeEach(() => jest.clearAllMocks());
+  it('retorna usuário existente', async () => {
+    const user = { _id: '651111111111111111111111', name: 'Alice', password: 'x' }
+    modelMock.findById.mockReturnValue(lean(user))
+    const res = await handler.execute({ id: '651111111111111111111111' })
+    expect(res.user.name).toBe('Alice')
+    expect(res.user.password).toBeUndefined()
+  })
 
-  it('retorna user quando existe', async () => {
-    const res = await handler.execute({ id: '1' });
-    expect(mockUsers.findById).toHaveBeenCalledWith('1');
-    expect(res.user).toMatchObject({ _id: '1', username: 'john' });
-  });
+  it('lança se id inválido', async () => {
+    await expect(handler.execute({ id: 'bad' })).rejects.toBeInstanceOf(NotFoundException)
+  })
 
-  it('lança NotFound quando não existe', async () => {
-    await expect(handler.execute({ id: 'x' })).rejects.toBeInstanceOf(NotFoundException);
-  });
-});
+  it('lança se não encontrar', async () => {
+    modelMock.findById.mockReturnValue(lean(null))
+    await expect(handler.execute({ id: '651111111111111111111111' })).rejects.toBeInstanceOf(NotFoundException)
+  })
+})

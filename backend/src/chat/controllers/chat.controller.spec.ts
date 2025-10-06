@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ChatController } from './chat.controller';
-import { SendDirectHandler } from '../handlers/send-direct.handler';
-import { GetHistoryHandler } from '../handlers/get-history.handler';
+import { Test, TestingModule } from '@nestjs/testing'
+import { ChatController } from './chat.controller'
+import { SendDirectHandler } from '../handlers/send-direct.handler'
+import { GetHistoryHandler } from '../handlers/get-history.handler'
 
 describe('ChatController', () => {
-  let controller: ChatController;
-  let sendDirectHandler: jest.Mocked<SendDirectHandler>;
-  let getHistoryHandler: jest.Mocked<GetHistoryHandler>;
+  let controller: ChatController
+  let sendDirect: jest.Mocked<SendDirectHandler>
+  let getHistory: jest.Mocked<GetHistoryHandler>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -15,46 +15,44 @@ describe('ChatController', () => {
         { provide: SendDirectHandler, useValue: { execute: jest.fn() } },
         { provide: GetHistoryHandler, useValue: { execute: jest.fn() } },
       ],
-    }).compile();
+    }).compile()
 
-    controller = module.get<ChatController>(ChatController);
-    sendDirectHandler = module.get(SendDirectHandler);
-    getHistoryHandler = module.get(GetHistoryHandler);
-  });
+    controller = module.get(ChatController)
+    sendDirect = module.get(SendDirectHandler) as jest.Mocked<SendDirectHandler>
+    getHistory = module.get(GetHistoryHandler) as jest.Mocked<GetHistoryHandler>
+  })
 
-  it('deve chamar sendDirectHandler com os dados corretos', async () => {
-    sendDirectHandler.execute.mockResolvedValue({ ok: true });
-    const body = { from: 'a', to: 'b', text: 'hello' };
-    const result = await controller.send(body);
-    expect(sendDirectHandler.execute).toHaveBeenCalledWith(body);
-    expect(result).toEqual({ ok: true });
-  });
+  it('deve enviar mensagem com body correto', async () => {
+    sendDirect.execute.mockResolvedValue({ ok: true })
+    const body = { from: 'u1', to: 'u2', text: 'hi' }
+    const res = await controller.send(body)
+    expect(sendDirect.execute).toHaveBeenCalledWith(body)
+    expect(res).toEqual({ ok: true })
+  })
 
-  it('deve chamar getHistoryHandler com os parâmetros corretos', async () => {
-    const fakeHistory = [{ from: 'a', to: 'b', text: 'msg' }];
-    getHistoryHandler.execute.mockResolvedValue(fakeHistory);
-
-    const result = await controller.history('userA', 'userB', '50', '123456');
-    expect(getHistoryHandler.execute).toHaveBeenCalledWith({
-      a: 'userA',
-      b: 'userB',
+  it('deve retornar histórico com conversão de limit e before', async () => {
+    const mocked = { msgs: [{ id: 1 }] }
+    getHistory.execute.mockResolvedValue(mocked)
+    const res = await controller.history('u1', 'u2', '50', String(1700000000000))
+    expect(getHistory.execute).toHaveBeenCalledWith({
+      a: 'u1',
+      b: 'u2',
       limit: 50,
-      before: 123456,
-    });
-    expect(result).toEqual(fakeHistory);
-  });
+      before: 1700000000000,
+    })
+    expect(res).toBe(mocked)
+  })
 
-  it('deve funcionar com before indefinido', async () => {
-    const fakeHistory = [{ from: 'a', to: 'b', text: 'msg2' }];
-    getHistoryHandler.execute.mockResolvedValue(fakeHistory);
-
-    const result = await controller.history('userA', 'userB', '10');
-    expect(getHistoryHandler.execute).toHaveBeenCalledWith({
-      a: 'userA',
-      b: 'userB',
-      limit: 10,
+  it('deve retornar histórico sem before quando não informado', async () => {
+    const mocked = { msgs: [] }
+    getHistory.execute.mockResolvedValue(mocked)
+    const res = await controller.history('u1', 'u2', '25', undefined)
+    expect(getHistory.execute).toHaveBeenCalledWith({
+      a: 'u1',
+      b: 'u2',
+      limit: 25,
       before: undefined,
-    });
-    expect(result).toEqual(fakeHistory);
-  });
-});
+    })
+    expect(res).toBe(mocked)
+  })
+})

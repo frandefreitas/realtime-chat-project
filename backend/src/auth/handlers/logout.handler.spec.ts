@@ -1,25 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LogoutHandler } from './logout.handler';
-import { AuthService } from '../auth.service';
+import { PublishOfflineHandler } from '@/presence/handlers/publish-offline.handler';
 
 describe('LogoutHandler', () => {
   let handler: LogoutHandler;
-  const mockAuth = { logout: jest.fn(async () => {}) };
+  let publishOfflineHandler: PublishOfflineHandler;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LogoutHandler,
-        { provide: AuthService, useValue: mockAuth },
+        {
+          provide: PublishOfflineHandler,
+          useValue: { execute: jest.fn() },
+        },
       ],
     }).compile();
 
-    handler = module.get(LogoutHandler);
+    handler = module.get<LogoutHandler>(LogoutHandler);
+    publishOfflineHandler = module.get<PublishOfflineHandler>(PublishOfflineHandler);
   });
 
-  it('calls AuthService.logout and returns ok', async () => {
-    const res = await handler.execute({ userId: 'abc' });
-    expect(mockAuth.logout).toHaveBeenCalledWith('abc');
-    expect(res).toEqual({ ok: true });
+  it('should be defined', () => {
+    expect(handler).toBeDefined();
+  });
+
+  it('should publish user as offline and return ok', async () => {
+    const userId = 'user123';
+    const result = await handler.execute({ userId });
+
+    expect(result).toEqual({ ok: true });
+    expect(publishOfflineHandler.execute).toHaveBeenCalledWith({ userId });
   });
 });

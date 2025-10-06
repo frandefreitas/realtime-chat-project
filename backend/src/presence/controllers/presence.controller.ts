@@ -1,22 +1,32 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { GetOnlineHandler, GetOnlineCommand } from '../handlers/get-online.handler';
-import { PublishOnlineHandler } from '../handlers/publish-online.handler';
+import { Body, Controller, Get, Post, BadRequestException } from '@nestjs/common'
+import { GetOnlineHandler } from '../handlers/get-online.handler'
+import { PublishOnlineHandler } from '../handlers/publish-online.handler'
+import { PublishOfflineHandler } from '../handlers/publish-offline.handler'
 
 @Controller('presence')
 export class PresenceController {
   constructor(
     private readonly getOnlineHandler: GetOnlineHandler,
     private readonly publishOnlineHandler: PublishOnlineHandler,
+    private readonly publishOfflineHandler: PublishOfflineHandler,
   ) {}
 
   @Get('online')
-  async getOnline() {
-    const cmd: GetOnlineCommand = {};
-    return this.getOnlineHandler.execute(cmd);
+  getOnline() {
+    return this.getOnlineHandler.execute({})
   }
 
   @Post('publish')
-  async publish(@Body() body: any) {
-    return this.publishOnlineHandler.execute({ userId: String(body?.userId ?? '') });
+  publish(@Body() body: any) {
+    const userId = String(body?.userId ?? '').trim()
+    if (!userId) throw new BadRequestException('userId obrigatório')
+    return this.publishOnlineHandler.execute({ userId })
+  }
+
+  @Post('offline')
+  offline(@Body() body: any) {
+    const userId = String(body?.userId ?? '').trim()
+    if (!userId) throw new BadRequestException('userId obrigatório')
+    return this.publishOfflineHandler.execute({ userId })
   }
 }

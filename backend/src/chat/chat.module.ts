@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ChatService } from './chat.service';
 import { ChatController } from './controllers/chat.controller';
 import { Message, MessageSchema } from './schemas/message.schema';
 import { BrokerModule } from '@/broker/broker.module';
@@ -10,10 +9,9 @@ import { GetHistoryHandler } from './handlers/get-history.handler';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
-    BrokerModule,
-  ],
+    BrokerModule],
   controllers: [ChatController],
-  providers: [ChatService, SendDirectHandler, GetHistoryHandler],
-  exports: [ChatService],
+  providers: [SendDirectHandler, GetHistoryHandler],
+  
 })
 export class ChatModule {}

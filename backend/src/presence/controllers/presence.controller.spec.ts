@@ -1,45 +1,52 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PresenceController } from './presence.controller';
-import { GetOnlineHandler } from '../handlers/get-online.handler';
-import { PublishOnlineHandler } from '../handlers/publish-online.handler';
+import { Test, TestingModule } from '@nestjs/testing'
+import { PresenceController } from './presence.controller'
+import { GetOnlineHandler } from '../handlers/get-online.handler'
+import { PublishOnlineHandler } from '../handlers/publish-online.handler'
+import { PublishOfflineHandler } from '../handlers/publish-offline.handler'
+import { BadRequestException } from '@nestjs/common'
 
 describe('PresenceController', () => {
-  let controller: PresenceController;
-  let getOnlineHandler: jest.Mocked<GetOnlineHandler>;
-  let publishOnlineHandler: jest.Mocked<PublishOnlineHandler>;
+  let controller: PresenceController
+  let getOnlineHandler: { execute: jest.Mock }
+  let publishOnlineHandler: { execute: jest.Mock }
+  let publishOfflineHandler: { execute: jest.Mock }
 
   beforeEach(async () => {
+    getOnlineHandler = { execute: jest.fn().mockResolvedValue(['u1', 'u2']) }
+    publishOnlineHandler = { execute: jest.fn().mockResolvedValue({ ok: true }) }
+    publishOfflineHandler = { execute: jest.fn().mockResolvedValue({ ok: true }) }
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PresenceController],
       providers: [
-        { provide: GetOnlineHandler, useValue: { execute: jest.fn() } },
-        { provide: PublishOnlineHandler, useValue: { execute: jest.fn() } },
+        { provide: GetOnlineHandler, useValue: getOnlineHandler },
+        { provide: PublishOnlineHandler, useValue: publishOnlineHandler },
+        { provide: PublishOfflineHandler, useValue: publishOfflineHandler },
       ],
-    }).compile();
+    }).compile()
 
-    controller = module.get<PresenceController>(PresenceController);
-    getOnlineHandler = module.get(GetOnlineHandler);
-    publishOnlineHandler = module.get(PublishOnlineHandler);
-  });
+    controller = module.get(PresenceController)
+  })
 
-  it('getOnline chama handler com {}', async () => {
-    getOnlineHandler.execute.mockResolvedValue(['u1', 'u2']);
-    const res = await controller.getOnline();
-    expect(getOnlineHandler.execute).toHaveBeenCalledWith({});
-    expect(res).toEqual(['u1', 'u2']);
-  });
+  it('should list online', async () => {
+    const r = await controller.getOnline()
+    expect(r).toEqual(['u1', 'u2'])
+    expect(getOnlineHandler.execute).toHaveBeenCalled()
+  })
 
-  it('publish chama handler com userId string', async () => {
-    publishOnlineHandler.execute.mockResolvedValue({ ok: true });
-    const res = await controller.publish({ userId: 123 });
-    expect(publishOnlineHandler.execute).toHaveBeenCalledWith({ userId: '123' });
-    expect(res).toEqual({ ok: true });
-  });
+  it('should publish online', async () => {
+    const r = await controller.publish({ userId: 'abc' } as any)
+    expect(r).toEqual({ ok: true })
+    expect(publishOnlineHandler.execute).toHaveBeenCalledWith({ userId: 'abc' })
+  })
 
-  it('publish trata body indefinido', async () => {
-    publishOnlineHandler.execute.mockResolvedValue({ ok: true });
-    const res = await controller.publish(undefined);
-    expect(publishOnlineHandler.execute).toHaveBeenCalledWith({ userId: '' });
-    expect(res).toEqual({ ok: true });
-  });
-});
+  it('should throw BadRequest if offline called without userId', () => {
+    expect(() => controller.offline({} as any)).toThrow(BadRequestException)
+  })
+
+  it('should publish offline', async () => {
+    const r = await controller.offline({ userId: 'abc' } as any)
+    expect(r).toEqual({ ok: true })
+    expect(publishOfflineHandler.execute).toHaveBeenCalledWith({ userId: 'abc' })
+  })
+})
