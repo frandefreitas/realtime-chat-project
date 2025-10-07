@@ -2,6 +2,7 @@ import { Controller, Post, Body } from '@nestjs/common'
 import { LoginHandler } from '../handlers/login.handler'
 import { RegisterHandler } from '../handlers/register.handler'
 import { LogoutHandler } from '../handlers/logout.handler'
+import { Public } from '../decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -11,6 +12,7 @@ export class AuthController {
     private readonly logoutHandler: LogoutHandler,
   ) {}
 
+  @Public()
   @Post('login')
   login(@Body() body: { username: string; password: string }) {
     return this.loginHandler.execute({
@@ -19,6 +21,7 @@ export class AuthController {
     })
   }
 
+  @Public()
   @Post('register')
   register(@Body() dto: any) {
     return this.registerHandler.execute(dto)

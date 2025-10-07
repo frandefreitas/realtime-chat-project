@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Global, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { MongooseModule } from '@nestjs/mongoose'
 import { User, UserSchema } from '@/users/schemas/user.schema'
@@ -10,6 +10,7 @@ import { LogoutHandler } from './handlers/logout.handler'
 import { JwtStrategy } from './jwt.strategy'
 import { LocalStrategy } from './local.strategy'
 
+@Global()
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -22,7 +23,13 @@ import { LocalStrategy } from './local.strategy'
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [AuthController],
-  providers: [LoginHandler, RegisterHandler, LogoutHandler, LocalStrategy, JwtStrategy],
+  providers: [
+    LoginHandler,
+    RegisterHandler,
+    LogoutHandler,
+    LocalStrategy,
+    JwtStrategy,
+  ],
   exports: [LoginHandler, RegisterHandler, LogoutHandler],
 })
 export class AuthModule {}

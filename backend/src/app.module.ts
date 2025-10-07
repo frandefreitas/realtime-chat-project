@@ -7,6 +7,8 @@ import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
 import { BrokerModule } from "./broker/broker.module";
 import { PresenceModule } from './presence/presence.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt.guard';
 
 @Module({
   imports: [
@@ -18,5 +20,8 @@ import { PresenceModule } from './presence/presence.module';
     UsersModule,
     ChatModule,
   ],
+  providers: [
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
-export class AppModule {}
+export class AppModule { }
