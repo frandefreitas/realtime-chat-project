@@ -20,24 +20,24 @@ export class LoginHandler implements ICommandHandler<LoginCommand, LoginResult> 
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
-  async validate(username: string, password: string) {
-    const q = username.toLowerCase()
+  async validate(identifier: string, password: string) {
+    const q = (identifier ?? '').toString().trim().toLowerCase()
+    if (!q) return null
     const user = await this.userModel
       .findOne(q.includes('@') ? { email: q } : { username: q })
       .select('+password')
-
     if (!user) return null
-    const ok = await bcrypt.compare(password, user.password ?? '')
+    const ok = await bcrypt.compare(password ?? '', user.password ?? '')
     return ok ? user : null
   }
 
-  async execute({ usernameOrEmail, password }: LoginCommand): Promise<LoginResult> {
+  async execute({ usernameOrEmail, password }: { usernameOrEmail: string; password: string }) {
     const user = await this.validate(usernameOrEmail, password)
-    if (!user) throw new UnauthorizedException('Invalid credentials')
-
+    if (!user) throw new UnauthorizedException('invalid credentials')
     const payload = { sub: String(user._id), username: user.username }
     return { access_token: this.jwtService.sign(payload) }
   }
+
 }
