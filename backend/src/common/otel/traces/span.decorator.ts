@@ -9,7 +9,7 @@ const recordException = (span: ApiSpan, error: any) => {
   span.setStatus({ code: SpanStatusCode.ERROR, message: error?.message });
 };
 
-export const Span =
+export const OtelSpan =
   (name?: string, options?: SpanDecoratorOptions) =>
   (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<any>) => {
     const className = target.constructor?.name || 'Anonymous';

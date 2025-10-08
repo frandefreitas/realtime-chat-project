@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { SendDirectHandler } from '../handlers/send-direct.handler';
 import { GetHistoryHandler } from '../handlers/get-history.handler';
+import { OtelSpan } from '@/common/otel/traces/span.decorator';
 
 @Controller('chat')
 export class ChatController {
@@ -9,11 +10,13 @@ export class ChatController {
     private readonly getHistory: GetHistoryHandler,
   ) {}
 
+  @OtelSpan()
   @Post('send')
   send(@Body() body: { from: string; to: string; text: string }) {
     return this.sendDirect.execute(body);
   }
 
+  @OtelSpan()
   @Get('history/:a/:b')
   history(
     @Param('a') a: string,

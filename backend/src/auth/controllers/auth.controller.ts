@@ -3,6 +3,7 @@ import { LoginHandler } from '../handlers/login.handler'
 import { RegisterHandler } from '../handlers/register.handler'
 import { LogoutHandler } from '../handlers/logout.handler'
 import { Public } from '../decorators/public.decorator';
+import { OtelSpan } from '@/common/otel/traces/span.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +13,7 @@ export class AuthController {
     private readonly logoutHandler: LogoutHandler,
   ) {}
 
+  @OtelSpan()
   @Public()
   @Post('login')
   login(@Body() body: { username: string; password: string }) {
@@ -21,12 +23,14 @@ export class AuthController {
     })
   }
 
+  @OtelSpan()
   @Public()
   @Post('register')
   register(@Body() dto: any) {
     return this.registerHandler.execute(dto)
   }
 
+  @OtelSpan()
   @Post('logout')
   logout(@Body('userId') userId: string) {
     return this.logoutHandler.execute({ userId })

@@ -1,5 +1,8 @@
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api';
+  process.env.NEXT_PUBLIC_API_BASE
+  ?? (typeof window !== 'undefined'
+        ? `${window.location.origin.replace(/\/$/, '')}/api`
+        : 'http://127.0.0.1:3011/api');
 
 const TOKEN_KEY = 'access_token';
 
