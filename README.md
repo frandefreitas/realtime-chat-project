@@ -202,6 +202,13 @@ sudo lsof -i :4222 -P -n
 sudo lsof -i :8222 -P -n
 sudo lsof -i :9222 -P -n
 
+pm2 delete realtime-chat-backend 2>/dev/null || true
+pm2 start pm2.config.js --env production
+pm2 stop all
+pm2 start pm2.config.js --env staging
+pm2 delete all
+
+
 👤 Contribuição
 
 Faça fork
