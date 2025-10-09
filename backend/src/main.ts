@@ -1,29 +1,26 @@
-import { NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule);
 
-  const origins = (process.env.CORS_ORIGINS ?? 'http://localhost:3000,http://127.0.0.1:3000')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
+  const natsUrl = process.env.NATS_URL || 'nats://127.0.0.1:4222';
 
-  app.setGlobalPrefix('api')
+  app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: (o, cb) => cb(null, !o || ['http://localhost:3000','http://127.0.0.1:3000'].includes(o)),
+    origin: ['http://localhost:3000','http://127.0.0.1:3000'],
     credentials: true,
+    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization'],
   });
-
 
   app.connectMicroservice({
     transport: 2,
-    options: { servers: [process.env.NATS_URL || 'nats://127.0.0.1:4222'] }
-  })
+    options: { servers: [natsUrl] },
+  });
 
-  await app.startAllMicroservices()
-  await app.listen(process.env.PORT ? Number(process.env.PORT) : 4000, '0.0.0.0');
+  await app.startAllMicroservices();
+  await app.listen(process.env.PORT || 4000);
 }
-
-bootstrap()
+bootstrap();

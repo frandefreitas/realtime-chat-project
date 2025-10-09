@@ -1,12 +1,11 @@
-version: '3.8'
 services:
   nats:
     image: nats:latest
     container_name: nats-chat-server
     ports:
-      - "4222:4222"   # conexão de clientes
-      - "8222:8222"   # painel de monitoramento
-    command: ["-DV", "--server_name", "nats-chat-server", "--http_port", "8222"]
+      - "4222:4222"
+      - "8222:8222"
+    command: ["-DV","--server_name","nats-chat-server","--http_port","8222"]
 
   mongo:
     image: mongo:latest
@@ -19,18 +18,16 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  app:
-    build: .
-    container_name: nest-chat-app
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: lgtm-chat-service
     ports:
-      - "3000:3000"
-    environment:
-      NATS_URL: nats://nats:4222
-      MONGODB_URI: mongodb://admin:admin@mongo-chat:27017/realtime_chat?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000&authSource=admin&authMechanism=SCRAM-SHA-1
-    depends_on:
-      - nats
-      - mongo
-    restart: always
+      - "3001:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - lgtm-data:/data
 
 volumes:
   mongo_data:
+  lgtm-data:
