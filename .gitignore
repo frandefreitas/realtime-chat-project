@@ -14,14 +14,6 @@ out/
 build/
 coverage/
 
-# env
-.env
-.env.*.local
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # OS / editor
 .DS_Store
 Thumbs.db
