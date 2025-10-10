@@ -23,7 +23,11 @@ module.exports = {
         JWT_EXPIRES_IN: '7d',
         OTEL_ENABLED: 'true',
         OTEL_SERVICE_NAME: 'realtime-chat-backend',
-        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318'
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318',
+        OTEL_TRACES_EXPORTER: 'otlp',
+        OTEL_METRICS_EXPORTER: 'otlp',
+        OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
+        OTEL_LOG_LEVEL: 'debug',
       },
 
       env_staging: {
@@ -36,7 +40,11 @@ module.exports = {
         JWT_EXPIRES_IN: '7d',
         OTEL_ENABLED: 'true',
         OTEL_SERVICE_NAME: 'realtime-chat-backend',
-        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318'
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318',
+        OTEL_TRACES_EXPORTER: 'otlp',
+        OTEL_METRICS_EXPORTER: 'otlp',
+        OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
+        OTEL_LOG_LEVEL: 'debug',
       },
 
       env_production: {
@@ -49,7 +57,11 @@ module.exports = {
         JWT_EXPIRES_IN: '7d',
         OTEL_ENABLED: 'true',
         OTEL_SERVICE_NAME: 'realtime-chat-backend',
-        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318'
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318',
+        OTEL_TRACES_EXPORTER: 'otlp',
+        OTEL_METRICS_EXPORTER: 'otlp',
+        OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
+        OTEL_LOG_LEVEL: 'debug',
       }
     }
   ]
