@@ -1,36 +1,38 @@
-# node
+# Node modules
 node_modules/
+
+# Logs
+logs/
+*.log
 npm-debug.log*
 yarn-error.log
 pnpm-debug.log*
 
-# build / output
+# Build / output
 dist/
 .build/
 out/
 .cache/
 .next/
-.next/*
 build/
 coverage/
+*.tsbuildinfo
 
-# OS / editor
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Docker
+docker-compose.override.yml
+
+# Editor / OS specific
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 
-# logs
-logs/
-*.log
-
-# lockfiles (opcional)
+# Lockfiles (opcional – descomente se quiser ignorar)
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
-
-# TypeScript
-*.tsbuildinfo
-
-# Docker
-docker-compose.override.yml

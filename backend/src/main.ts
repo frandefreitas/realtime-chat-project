@@ -4,20 +4,20 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const natsUrl = process.env.NATS_URL || 'nats://127.0.0.1:4222';
-
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: ['http://localhost:3000','http://127.0.0.1:3000'],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
-    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-    allowedHeaders: ['Content-Type','Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.connectMicroservice({
     transport: 2,
-    options: { servers: [natsUrl] },
+    options: {
+      servers: [process.env.NATS_URL ?? 'nats://127.0.0.1:4222'],
+    },
   });
 
   await app.startAllMicroservices();

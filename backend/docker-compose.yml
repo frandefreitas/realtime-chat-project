@@ -1,11 +1,14 @@
 services:
   nats:
-    image: nats:latest
-    container_name: nats-chat-server
+    image: nats:2
+    container_name: nats-local
+    command: ["-c", "/etc/nats/nats.conf"]
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
     ports:
       - "4222:4222"
       - "8222:8222"
-    command: ["-DV","--server_name","nats-chat-server","--http_port","8222"]
+      - "9222:9222"
 
   mongo:
     image: mongo:latest
@@ -17,6 +20,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin
     volumes:
       - mongo_data:/data/db
+    restart: unless-stopped
 
   lgtm:
     image: grafana/otel-lgtm:latest
@@ -27,6 +31,7 @@ services:
       - "4318:4318"
     volumes:
       - lgtm-data:/data
+    restart: unless-stopped
 
 volumes:
   mongo_data:
